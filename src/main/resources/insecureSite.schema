@@ -1,0 +1,43 @@
+PRAGMA foreign_keys = ON;
+
+-- Create the table
+CREATE TABLE victims ( -- Users of this crap boardgame shop
+    email TEXT PRIMARY KEY NOT NULL,
+    customer_name TEXT NOT NULL,
+    password char(50) NOT NULL
+);
+
+CREATE TABLE order (
+    order_id INT PRIMARY KEY NOT NULL,
+    customer_email TEXT NOT NULL,
+    order_date DATE NOT NULL,
+    total_price REAL NOT NULL,
+    FOREIGN_KEY(customer_email) REFERENCES victims(email)
+);
+
+CREATE TABLE boardgame (
+    boardgame_id INT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    quantity INT NOT NULL,
+    description TEXT,
+);
+
+-- Boardgames x Orders 
+CREATE TABLE boardgamesOrdered (
+    order_id INT PRIMARY KEY NOT NULL,
+    customer_email TEXT PRIMARY KEY NOT NULL,
+    boardgame_id INT PRIMARY KEY NOT NULL,
+    quantity INT PRIMARY KEY NOT NULL,
+    FOREIGN_KEY(order_id) REFERENCES order(order_id),
+    FOREIGN_KEY(customer_email) REFERENCES order(customer_email),
+    FOREIGN_KEY(boardgame_id) REFERENCES boardgame(boardgame_id)
+);
+
+-- Shipments 
+CREATE TABLE shipments (
+    shipment_id INT PRIMARY KEY NOT NULL,
+    order_id INT NOT NULL,
+    shipment_date DATE NOT NULL,
+    FOREIGN_KEY(order_id) REFERENCES order(order_id)
+);
