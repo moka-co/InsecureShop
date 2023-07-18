@@ -1,6 +1,6 @@
 PRAGMA foreign_keys = ON;
 
--- Create the table
+-- Create the tables
 CREATE TABLE victims ( -- Users of this crap boardgame shop
     email TEXT PRIMARY KEY NOT NULL,
     customer_name TEXT NOT NULL,
@@ -41,3 +41,9 @@ CREATE TABLE shipments (
     shipment_date DATE NOT NULL,
     FOREIGN_KEY(order_id) REFERENCES order(order_id)
 );
+
+
+-- Populate database
+-- Ideally, in the future this would be randomly generated on the dockerfile build
+INSERT INTO victims(email, customer_email, password) VALUES ("hacker@insecuresite.xyz", "you", "computer");
+INSERT INTO victims(email, customer_email, password) VALUES ("administrator@insecuresite.xyz", "jeremia the owner", "123456789"  );

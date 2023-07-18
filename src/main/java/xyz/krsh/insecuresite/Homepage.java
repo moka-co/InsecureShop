@@ -6,11 +6,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+//Import db 
+import xyz.krsh.insecuresite.db.SQLiteConnection;
+
 @Controller
 public class Homepage {
 
 	@GetMapping("/")
 	public String index(Model model ) {
+
+		// Temporary testing for db connection
+		String test = SQLiteConnection.getInstance().getDatabaseVersion();
+
+
+
+
 		return "Homepage";
 	}
 
