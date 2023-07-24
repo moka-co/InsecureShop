@@ -11,10 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/boardgames")
-public class ProductsController {
+public class BoardgameController {
 
     @Autowired
-    ProductRepository repo;
+    BoardgameRepository repo;
 
     @GetMapping
     public List<Boardgame> findAll() {
@@ -32,9 +32,15 @@ public class ProductsController {
         return listbg;
     }
 
-    @GetMapping("/items/{id}")
+    @GetMapping("/boardgames/{id}")
     Boardgame getById(@PathVariable String id) {
         return repo.findById(id).get();
+    }
+
+    @GetMapping("/boardgames/add/{id}")
+    public String create(@PathVariable String id) {
+        Boardgame result = repo.save(new Boardgame(id));
+        return result.toString();
     }
 
 }

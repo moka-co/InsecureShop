@@ -13,9 +13,19 @@ public class Boardgame {
 
     @Id
     private String name = null;
+
+    @Column
     private float price = 0.0f;
+
+    @Column
     private int quantity = 0;
+
+    @Column
     private String description = null;
+
+    public Boardgame() {
+
+    }
 
     public Boardgame(String name) {
         this.name = "";
