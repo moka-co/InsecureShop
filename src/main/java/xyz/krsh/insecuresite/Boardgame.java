@@ -4,7 +4,9 @@ import javax.persistence.*;
 
 /* 
     This class represents a boardgame.
-    A board must have a name and could have a price, a quantity and a description
+    A board 
+    - must have a name
+    - could have a price, a quantity and a description
 */
 
 @Entity
@@ -23,7 +25,7 @@ public class Boardgame {
     @Column
     private String description = null;
 
-    public Boardgame() {
+    public Boardgame() { // Required by JPA
 
     }
 
