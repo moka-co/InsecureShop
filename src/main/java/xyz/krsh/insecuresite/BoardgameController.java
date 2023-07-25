@@ -5,10 +5,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/boardgames")
@@ -55,6 +58,50 @@ public class BoardgameController {
             @RequestParam("description") String description) {
         Boardgame result = repo.save(new Boardgame(name, price, quantity, description));
         return result;
+    }
+
+    /*
+     * edit an existing boardgame by specifying his name and optional parameters
+     * that will replace the older ones
+     * return the Boardgame with newest values
+     */
+
+    @GetMapping(value = "/{name}/edit")
+    @ResponseBody
+    public String ediBoardgame(@PathVariable String name,
+            @RequestParam(value = "price", required = false) Float price,
+            @RequestParam(value = "quantity", required = false) Integer quantity,
+            @RequestParam(value = "description", required = false) String description,
+            HttpServletRequest request) {
+        List<Boardgame> queryResult = repo.findByNameContaining(name);
+        Boardgame boardgame;
+
+        if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
+            return "Boardgame not found";
+        } else {
+            boardgame = queryResult.get(0);
+        }
+
+        repo.delete(boardgame); // Delete the old boardgame
+
+        /* Check existance of params */
+        boolean priceParamExists = request.getParameterMap().containsKey("price");
+        boolean quantityParamExists = request.getParameterMap().containsKey("quantity");
+        boolean descriptionParamExists = request.getParameterMap().containsKey("description");
+
+        // if price exists as parameter in the HTTP request, change the price
+        if (priceParamExists) {
+            boardgame.setPrice(price);
+        }
+        if (quantityParamExists) {
+            boardgame.setQuantity(quantity);
+        }
+        if (descriptionParamExists) {
+            boardgame.setDescription(description);
+        }
+
+        repo.save(boardgame); // Save the new boardgame
+        return boardgame.toString();
     }
 
     /*

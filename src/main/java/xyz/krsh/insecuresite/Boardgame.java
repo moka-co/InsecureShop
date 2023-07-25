@@ -89,9 +89,9 @@ public class Boardgame {
 
     public String toString() {
         return "Boardgame{" + "name(id)=" + name +
-                ", price=" + price +
-                ", quantity" + quantity +
-                ", description" + description +
+                ", price: " + price +
+                ", quantity: " + quantity +
+                ", description: " + description +
                 "}  ";
     }
 
