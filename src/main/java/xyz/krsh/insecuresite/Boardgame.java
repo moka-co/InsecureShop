@@ -37,17 +37,6 @@ public class Boardgame {
         this.description = "";
     }
 
-    public Boardgame(String name, float price) {
-        this.name = name;
-        this.price = price;
-    }
-
-    public Boardgame(String name, float price, int quantity) {
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-    }
-
     public Boardgame(String name, float price, int quantity, String description) {
         this.name = name;
         this.price = price;
