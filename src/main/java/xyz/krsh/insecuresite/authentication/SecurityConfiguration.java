@@ -1,14 +1,15 @@
 package xyz.krsh.insecuresite.authentication;
 
 import org.springframework.context.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.*;
-import org.springframework.security.config.annotation.authentication.builders.*;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.*;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -21,8 +22,6 @@ public class SecurityConfiguration {
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
-        BCryptPasswordEncoder bcpe = new BCryptPasswordEncoder();
-        System.out.println(bcpe.encode("password"));
         return new BCryptPasswordEncoder();
     }
 
@@ -35,29 +34,40 @@ public class SecurityConfiguration {
         return authProvider;
     }
 
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider());
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration auth) throws Exception {
+        // https://stackoverflow.com/questions/72381114/spring-security-upgrading-the-deprecated-websecurityconfigureradapter-in-spring
+        return auth.getAuthenticationManager();
+    }
+
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return new CustomLogoutSuccessHandler();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
-        http.authorizeRequests()
+        http.csrf().disable()
+                .authorizeRequests()
                 .antMatchers("/boardgames/*/delete")
                 .hasRole("admin")
                 .antMatchers("/boardgames/*/edit")
                 .hasRole("admin")
-                .antMatchers("/boardgames/").permitAll()
-                .anyRequest()
-                .authenticated()
-                .and().formLogin()
+                .antMatchers("/boardgames").permitAll()
+                .antMatchers("/login*").permitAll()
+                .and()
+                .sessionManagement()
+                .sessionFixation().none()
+                .and()
+                .formLogin()
                 .loginProcessingUrl("/perform_login")
                 .defaultSuccessUrl("/boardgames", true)
                 .permitAll()
                 .and()
                 .logout()
                 .logoutUrl("/perform_logout")
-                .deleteCookies("JSESSIONID");
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler(logoutSuccessHandler());
         return http.build();
     }
 }

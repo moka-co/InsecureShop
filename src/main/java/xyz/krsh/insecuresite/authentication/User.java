@@ -19,8 +19,7 @@ public class User {
     @Column
     private String role;
 
-    public User(){
-        this.role="user";
+    public User() {
     }
 
     public String getId() {
