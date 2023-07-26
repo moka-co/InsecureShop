@@ -19,10 +19,8 @@ public class CustomLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
             final Authentication authentication) throws IOException, ServletException {
 
         if (authentication != null) {
-            System.out.println(authentication);
+            System.out.println(authentication.getPrincipal().toString());
         }
-        final String refererUrl = request.getHeader("referer");
-        System.out.println(refererUrl);
 
         super.onLogoutSuccess(request, response, authentication);
     }

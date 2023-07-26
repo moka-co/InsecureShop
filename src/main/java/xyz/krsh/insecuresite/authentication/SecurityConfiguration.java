@@ -1,6 +1,7 @@
 package xyz.krsh.insecuresite.authentication;
 
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.*;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -9,24 +10,27 @@ import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+    // User details service implemented through JPA repository pattern
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserDetailsServiceImpl();
     }
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder() { // Required, encode password with BCrypt
+        // https://www.baeldung.com/spring-security-registration-password-encoding-bcrypt
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider() { // Retrieve users from the database through UserDetails
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
@@ -64,10 +68,12 @@ public class SecurityConfiguration {
                 .defaultSuccessUrl("/boardgames", true)
                 .permitAll()
                 .and()
-                .logout()
-                .logoutUrl("/perform_logout")
+                .logout() // //is not going to work because of HTTP
+                .logoutUrl("/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
+                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
                 .deleteCookies("JSESSIONID")
-                .logoutSuccessHandler(logoutSuccessHandler());
+                .permitAll();
         return http.build();
     }
 }

@@ -12,9 +12,6 @@ public class MyUserDetails implements UserDetails {
     private User user;
 
     public MyUserDetails(User user) {
-        System.out.println("username is:" + user.getName());
-        System.out.println("password is: " + user.getPassword());
-        System.out.println("user role is" + user.getRole());
         this.user = user;
     }
 

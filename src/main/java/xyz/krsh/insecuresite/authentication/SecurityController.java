@@ -13,7 +13,11 @@ public class SecurityController {
     @RequestMapping(value = "/username", method = RequestMethod.GET)
     @ResponseBody
     public String currentUserName(Principal principal) {
-        return principal.toString();
+        if (principal != null) {
+            return principal.toString();
+        }
+
+        return "404";
     }
 
 }
