@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.authentication;
+package xyz.krsh.insecuresite.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

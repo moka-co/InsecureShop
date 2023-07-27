@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.authentication;
+package xyz.krsh.insecuresite.security;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +28,7 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getName();
+        return user.getId();
     }
 
     @Override

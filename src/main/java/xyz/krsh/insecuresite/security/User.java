@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.authentication;
+package xyz.krsh.insecuresite.security;
 
 import javax.persistence.*;
 

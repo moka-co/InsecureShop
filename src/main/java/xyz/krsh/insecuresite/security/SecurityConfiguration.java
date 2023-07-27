@@ -1,17 +1,17 @@
-package xyz.krsh.insecuresite.authentication;
+package xyz.krsh.insecuresite.security;
 
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.*;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.*;
-import org.springframework.security.config.annotation.web.configuration.*;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -44,32 +44,29 @@ public class SecurityConfiguration {
         return auth.getAuthenticationManager();
     }
 
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return new CustomLogoutSuccessHandler();
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/boardgames/*/delete")
-                .hasRole("admin")
-                .antMatchers("/boardgames/*/edit")
-                .hasRole("admin")
-                .antMatchers("/boardgames").permitAll()
-                .antMatchers("/login*").permitAll()
+                .antMatchers("/api/boardgames/*/delete")
+                .hasAuthority("admin")
+                .antMatchers("/api/boardgames/*/edit")
+                .hasAuthority("admin")
+                .antMatchers("/api/boardgames/add")
+                .hasAuthority("admin")
+                .antMatchers("/api/boardgames").permitAll()
+                .antMatchers("/api/login*").permitAll()
                 .and()
                 .sessionManagement()
                 .sessionFixation().none()
                 .and()
                 .formLogin()
-                .loginProcessingUrl("/perform_login")
-                .defaultSuccessUrl("/boardgames", true)
-                .permitAll()
+                .loginProcessingUrl("/api/perform_login")
+                .defaultSuccessUrl("/api/boardgames", true)
                 .and()
                 .logout() // //is not going to work because of HTTP
-                .logoutUrl("/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
+                .logoutUrl("/api/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
                 .logoutSuccessUrl("/login?logout")
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
                 .deleteCookies("JSESSIONID")

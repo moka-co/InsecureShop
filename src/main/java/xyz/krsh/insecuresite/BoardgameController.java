@@ -1,6 +1,10 @@
 package xyz.krsh.insecuresite;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,13 +12,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import xyz.krsh.insecuresite.rest.ApiError;
+
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/boardgames")
+@RequestMapping("/api/boardgames")
 public class BoardgameController {
 
     @Autowired
@@ -24,14 +30,16 @@ public class BoardgameController {
      * Returns every boardgame in the database
      */
     @GetMapping
-    public List<Boardgame> findAll() {
+    @ResponseBody
+    public List<Boardgame> findAll() throws IndexOutOfBoundsException {
 
         // Unfortunately, repo.finAll() returns an Iterator,
         // and i cannot cast it into a LinkedList
         List<Boardgame> listbg = new LinkedList<Boardgame>();
         for (Boardgame e : repo.findAll()) {
             if (listbg.add(e) == false) {
-                System.out.println("Cannot add element " + e.toString());
+                System.out.println(
+                        "Error in BoardgameController.class method findAll(): Cannot add element " + e.toString());
             }
         }
         return listbg;
@@ -43,7 +51,8 @@ public class BoardgameController {
      */
 
     @GetMapping("/{name}")
-    Boardgame getById(@PathVariable String name) {
+    @ResponseBody
+    Boardgame getById(@PathVariable String name) throws IndexOutOfBoundsException {
         return repo.findByNameContaining(name).get(0);
     }
 
@@ -52,32 +61,36 @@ public class BoardgameController {
      * Request parameters are: name, price, quantity and description
      */
     @GetMapping("/add")
-    public Boardgame addBoardgame(@RequestParam("name") String name,
+    @ResponseBody
+    public Boardgame addBoardgameReq(@RequestParam("name") String name,
             @RequestParam("price") float price,
             @RequestParam("quantity") int quantity,
-            @RequestParam("description") String description) {
+            @RequestParam("description") String description,
+            HttpServletRequest request) throws MissingServletRequestParameterException {
+
         Boardgame result = repo.save(new Boardgame(name, price, quantity, description));
         return result;
     }
 
     /*
-     * edit an existing boardgame by specifying his name and optional parameters
+     * Edit an existing boardgame by specifying his name and optional parameters
      * that will replace the older ones
-     * return the Boardgame with newest values
+     * Return the Boardgame with newest values
      */
 
     @GetMapping(value = "/{name}/edit")
     @ResponseBody
-    public String ediBoardgame(@PathVariable String name,
+    public Boardgame ediBoardgame(@PathVariable String name,
             @RequestParam(value = "price", required = false) Float price,
             @RequestParam(value = "quantity", required = false) Integer quantity,
             @RequestParam(value = "description", required = false) String description,
             HttpServletRequest request) {
+
         List<Boardgame> queryResult = repo.findByNameContaining(name);
         Boardgame boardgame;
 
         if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
-            return "Boardgame not found";
+            throw new IndexOutOfBoundsException();
         } else {
             boardgame = queryResult.get(0);
         }
@@ -101,7 +114,7 @@ public class BoardgameController {
         }
 
         repo.save(boardgame); // Save the new boardgame
-        return boardgame.toString();
+        return boardgame;
     }
 
     /*
@@ -110,10 +123,27 @@ public class BoardgameController {
      * 
      */
     @GetMapping("/{name}/delete")
-    public String deleteBoardgame(@PathVariable String name) {
+    public String deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
         repo.deleteById(name);
 
         return "Successfully deleted " + name + " ";
+    }
+
+    /*
+     * Exception Handlers
+     */
+
+    // Occurrs when you can't find any boardgames
+    @ExceptionHandler({ IndexOutOfBoundsException.class, EmptyResultDataAccessException.class })
+    public ApiError handleIndexOutOfBoundsException() {
+        return new ApiError("Bordgame not found, retry", HttpStatus.NOT_FOUND);
+
+    }
+
+    @ExceptionHandler({ MissingServletRequestParameterException.class })
+    public ApiError handleMissingParametersException() {
+        return new ApiError("Bad Paremeters: required name, price, quantity and description", HttpStatus.BAD_REQUEST);
+
     }
 
 }
