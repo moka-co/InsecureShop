@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.rest;
+package xyz.krsh.insecuresite.exceptions;
 
 import org.springframework.http.HttpStatus;
 

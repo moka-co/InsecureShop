@@ -1,7 +1,6 @@
-package xyz.krsh.insecuresite;
+package xyz.krsh.insecuresite.rest.dao;
 
 import java.util.Date;
-
 import javax.persistence.*;
 
 import xyz.krsh.insecuresite.security.User;
@@ -21,6 +20,8 @@ public class Order {
     @Column
     private Date orderDate;
 
+    private double price = 0.0;
+
     public Order() {
     }
 
@@ -37,6 +38,10 @@ public class Order {
         return orderDate;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -44,5 +49,4 @@ public class Order {
     public void setOrderDate(Date date) {
         orderDate = date;
     }
-
 }

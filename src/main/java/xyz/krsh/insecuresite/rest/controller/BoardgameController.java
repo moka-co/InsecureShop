@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite;
+package xyz.krsh.insecuresite.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import xyz.krsh.insecuresite.rest.ApiError;
+import xyz.krsh.insecuresite.exceptions.ApiError;
+import xyz.krsh.insecuresite.rest.dao.Boardgame;
+import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 
 import java.util.LinkedList;
 import java.util.List;

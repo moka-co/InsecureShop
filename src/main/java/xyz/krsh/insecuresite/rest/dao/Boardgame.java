@@ -1,4 +1,7 @@
-package xyz.krsh.insecuresite;
+package xyz.krsh.insecuresite.rest.dao;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.*;
 
@@ -24,6 +27,9 @@ public class Boardgame {
 
     @Column
     private String description = null;
+
+    @ManyToMany
+    private Set<Order> orders = new HashSet<>();
 
     public Boardgame() { // Required by JPA
 
@@ -62,6 +68,10 @@ public class Boardgame {
 
     public String getDescription() {
         return description;
+    }
+
+    public Set<Order> getOrders() {
+        return orders;
     }
 
     public void setPrice(float p) {

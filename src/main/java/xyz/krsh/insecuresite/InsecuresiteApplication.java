@@ -21,7 +21,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 @ComponentScan
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "xyz.krsh.insecuresite")
-// @SpringBootApplication(scanBasePackages = "xyz.krsh.insecuresite")
 public class InsecuresiteApplication {
 
 	public static void main(String[] args) {
