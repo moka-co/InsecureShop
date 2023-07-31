@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import xyz.krsh.insecuresite.exceptions.ApiError;
+import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dao.Boardgame;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,18 +33,17 @@ public class BoardgameController {
      */
     @GetMapping
     @ResponseBody
-    public List<Boardgame> findAll() throws IndexOutOfBoundsException {
+    public List<Boardgame> find(String q) throws ItemNotFoundException {
 
-        // Unfortunately, repo.finAll() returns an Iterator,
-        // and i cannot cast it into a LinkedList
-        List<Boardgame> listbg = new LinkedList<Boardgame>();
-        for (Boardgame e : repo.findAll()) {
-            if (listbg.add(e) == false) {
-                System.out.println(
-                        "Error in BoardgameController.class method findAll(): Cannot add element " + e.toString());
-            }
+        if (q == null) { // if you don't pass an input string
+            q = new String("");
         }
-        return listbg;
+        List<Boardgame> query = repo.findByNameContaining(q);
+        if (query.isEmpty()) {
+            throw new ItemNotFoundException();
+        } else {
+            return query;
+        }
     }
 
     /*
@@ -136,7 +135,9 @@ public class BoardgameController {
      */
 
     // Occurrs when you can't find any boardgames
-    @ExceptionHandler({ IndexOutOfBoundsException.class, EmptyResultDataAccessException.class })
+    @ExceptionHandler({ ItemNotFoundException.class, IndexOutOfBoundsException.class,
+            EmptyResultDataAccessException.class })
+
     public ApiError handleIndexOutOfBoundsException() {
         return new ApiError("Bordgame not found, retry", HttpStatus.NOT_FOUND);
 
