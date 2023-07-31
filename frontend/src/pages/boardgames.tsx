@@ -1,46 +1,30 @@
 import React, {useState, useEffect} from 'react';
 
-interface Boardgame {
+export interface Boardgame {
   name: String,
   price: Float32Array,
   quantity: number,
   description: String
 }
 
-const endpoint ='http://localhost:8080/api/boardgames';
+export class SearchBoardgames {
 
-const Boardgames: React.FC = () => {
-  const [boardgames, setBoardgames] = useState<Boardgame[]>([]);
+  public async handleSearch(q: string): Promise<Boardgame[]>{
 
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch(endpoint);
-      const jsonData = await response.json();
-      console.log(jsonData);
-      setBoardgames(jsonData);
+    //probably there is a better way to do this:
+    const endpoint = 'http://localhost:8080/api/boardgames?q=' + q + ' ';
+    console.log(endpoint);
 
-    }
+    //Fetch results from backend
+    const response = await fetch(endpoint);
+    const jsonData = await response.json();
 
-    fetchData();
-    }, []);
-
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {
-        boardgames.map((boardgame, index) => (
-          <div key={index} className="border p-4">
-            <h2 className="text-xl font-bold">{boardgame.name}</h2>
-            <p className="text-gray-600"> {boardgame.description}</p>
-            <span className="text-green-600 font-semibold"> {boardgame.price}</span>
-
-          </div>
-        ))
-      }
-
-    </div>
-  )
-
+    const boardgames : Boardgame[] = jsonData;
+    
+    // Frontend-side filter, it's useless since it is managed by the backend
+    //const filteredProducts = boardgames.filter((bg) => bg.name.toLowerCase().includes(q) );
+    
+    return boardgames;
+  }
 
 };
-
-export default Boardgames;

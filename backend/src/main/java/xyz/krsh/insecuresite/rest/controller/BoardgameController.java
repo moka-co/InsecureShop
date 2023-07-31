@@ -29,16 +29,14 @@ public class BoardgameController {
     BoardgameRepository repo;
 
     /*
-     * Returns every boardgame in the database
+     * Returns every boardgame or the ones that match the query value
      */
     @GetMapping
     @ResponseBody
-    public List<Boardgame> find(String q) throws ItemNotFoundException {
+    public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm)
+            throws ItemNotFoundException {
 
-        if (q == null) { // if you don't pass an input string
-            q = new String("");
-        }
-        List<Boardgame> query = repo.findByNameContaining(q);
+        List<Boardgame> query = repo.findByNameContaining(queryTerm);
         if (query.isEmpty()) {
             throw new ItemNotFoundException();
         } else {
