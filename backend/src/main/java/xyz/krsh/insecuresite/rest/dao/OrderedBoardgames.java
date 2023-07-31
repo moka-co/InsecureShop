@@ -5,20 +5,23 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 
+/*
+ * Represent Many-To-Many Relationship between Orders and Boardgames
+ * with attribute quantity
+ * OrderedBoardgamesId is an attribute
+ */
 @Entity
 public class OrderedBoardgames {
 
     @EmbeddedId
-    private OrderedBoardgamesId id = new OrderedBoardgamesId(); // hai bisogno di una
-    // Classe quando devi fare una tabella many to many con attributi
-    // Questo perchè devi rappresentare un id campi multipli e quindi una classe
+    private OrderedBoardgamesId id = new OrderedBoardgamesId();
 
     @ManyToOne
     @MapsId("orderId")
     private Order order;
 
     @ManyToOne
-    @MapsId("boardgameName") // TODO: commentare qui
+    @MapsId("boardgameName")
     private Boardgame boardgame;
 
     private int quantity;

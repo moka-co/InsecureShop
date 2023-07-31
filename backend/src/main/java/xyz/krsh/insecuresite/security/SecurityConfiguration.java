@@ -12,6 +12,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -45,9 +48,20 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.addAllowedOrigin("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsFilter(source);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
-        http.csrf().disable()
+        http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/boardgames/*/delete")
                 .hasAuthority("admin")
