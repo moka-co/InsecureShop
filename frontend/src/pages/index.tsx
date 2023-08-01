@@ -6,6 +6,7 @@ const HomePage: React.FC = () => {
     const [searchResults, setSearchResults] = useState<Boardgame[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearchClicked, setIsSearchClicked] = useState(false);
+    var amILoggedIn: boolean = checkAmILoggedIn();
 
     //This method get called when the user click on the "Search" button
     //it updates searchResults variable with results from API call
@@ -14,6 +15,28 @@ const HomePage: React.FC = () => {
         setSearchResults(results);
         setIsSearchClicked(true);
     };
+
+    function checkAmILoggedIn(): boolean {
+        const uri = 'http://localhost:8080/api/check_login'
+        const respon2 = fetch('http://localhost:8080/api/username');
+        console.log(respon2);
+        console.log("=================================");
+        fetch(uri, {method: 'GET'}
+            ).then((response) => {
+                console.log(response);
+                if ( response.ok){
+                    return response.json();
+                }
+            }).then((data)=>{
+                console.log("Returns: " + data);
+                return data;
+            }).catch((error) => {
+                return false;
+            })
+
+
+        return false;
+    }
 
     //this method get called when you change something in the input form
     //Change search term inside the search bar and set search clicked to 0
@@ -24,7 +47,14 @@ const HomePage: React.FC = () => {
 
     return (
             <div>
-                <h1>Hello, this is the Home Page!</h1>
+                <h1>Welcome to Insecure Shop!</h1>
+                <div>
+                    <p> 
+                        {amILoggedIn==false  &&<a href="http://localhost:8080/login">Log in</a>}
+                        {amILoggedIn==true  && <p>You are logged in</p>}
+                    </p>
+                </div>
+
                 <div>
                     <input
                     type="text"

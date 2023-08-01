@@ -23,12 +23,21 @@ public class SecurityController {
 
     }
 
-    @RequestMapping(value = "/username", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/username", method = RequestMethod.GET)
     @ResponseBody
     public String currentUserName(Principal principal) {
 
         return principal.toString();
 
+    }
+
+    @RequestMapping(value = "/api/check_login", method = RequestMethod.GET)
+    @ResponseBody
+    public boolean checkAmILoggedIn(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+        return true;
     }
 
 }

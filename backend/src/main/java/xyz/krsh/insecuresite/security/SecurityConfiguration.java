@@ -50,7 +50,21 @@ public class SecurityConfiguration {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.addAllowedOrigin("*");
+        /*
+         * corsConfig.addAllowedOrigin("*");
+         * corsConfig.addAllowedMethod("GET");
+         * corsConfig.addAllowedMethod("POST");
+         * corsConfig.addAllowedHeader("*");
+         */
+
+        // Allows frontend connection in React
+        corsConfig.addAllowedOrigin("http://localhost:3000/");
+        corsConfig.addAllowedMethod("POST");
+        corsConfig.addAllowedMethod("GET");
+        corsConfig.addAllowedHeader("*");
+
+        // Cookies
+        corsConfig.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
@@ -61,7 +75,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
-        http.cors().and().csrf().disable()
+        http.cors().and().csrf().and()
                 .authorizeRequests()
                 .antMatchers("/api/boardgames/*/delete")
                 .hasAuthority("admin")
@@ -77,13 +91,14 @@ public class SecurityConfiguration {
                 .authenticated()
                 .antMatchers("/api/boardgames").permitAll()
                 .antMatchers("/api/login*").permitAll()
+                .antMatchers("/api/login_check/").permitAll()
                 .and()
                 .sessionManagement()
                 .sessionFixation().none()
                 .and()
                 .formLogin()
                 .loginProcessingUrl("/api/perform_login")
-                .defaultSuccessUrl("/api/boardgames", true)
+                .defaultSuccessUrl("http://localhost:3000/", true)
                 .and()
                 .logout() // //is not going to work because of HTTP
                 .logoutUrl("/api/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
