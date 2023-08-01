@@ -36,7 +36,11 @@ const HomePage: React.FC = () => {
 
                     <div>
                         {/* Here, I found out: React escapes characters */}
-                        { isSearchClicked && searchTerm != '' && <p>You searched for "{searchTerm}"</p>} 
+                        { isSearchClicked && searchTerm != '' && 
+                        <p>You searched for 
+                            <p dangerouslySetInnerHTML={{"__html": searchTerm}}/>
+                        </p>
+                        } 
 
                         {searchResults.length > 0 && searchResults.map((boardgame, index) => (
                             <div key={index} className="border p-4">

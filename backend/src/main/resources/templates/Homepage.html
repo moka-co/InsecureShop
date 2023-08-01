@@ -1,14 +1,50 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
   <meta charset="utf-8">
-  <title>Rainbow</title>
+  <title>Homepage</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
-    <p>
-        Hello Spring Boot!
+  <div>
+    <h1>
+      Welcome to Insecure Shop!
+    </h1>
+  </div>
+  <div>
+    <input id="searchBar" class="searchBar" input="text" placeholder="Search..." th:attr="value=${searchedFor}" />
+    <button onclick="searchBar()">Search</button>
+    <p th:if='${searchedFor != ""}'>
+      You searched for: <th th:utext="${searchedFor}"></th>
     </p>
+  </div>
+
+  <p id="hidden" th:if='${noResultFound == true}'>
+    No Result found
+  </p>
+  <div th:each="boardgame: ${boardgames}">
+    <div>
+        <h3 th:text="${boardgame.name}"> </h3>
+        <p>Prezzo: <td th:text="${boardgame.price}"> </td></p>
+
+        <p th:text="${boardgame.description}"> </p>
+    </div>
+  </div>
 </body>
+
+<script>
+  function searchBar(){
+    let inputElement = document.getElementById("searchBar");
+    let searchValue = inputElement.value;
+
+    if ( searchValue != ''){
+      let redirectTo = '?q=' + searchValue + '';
+      console.log(redirectTo);
+      window.location.href= redirectTo;
+    }else{
+      window.location.href= "/"
+    }
+  }
+</script>
 </html>
