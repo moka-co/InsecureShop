@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 import xyz.krsh.insecuresite.security.UserRepository;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/orders")
 public class OrdersController {
@@ -72,8 +74,17 @@ public class OrdersController {
         return isAdmin;
     }
 
+    @RequestMapping("/admin")
+    public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
+        if (isAdmin() != true) {
+            throw new UnauthorizedException();
+        }
+        List<OrderedBoardgames> resultQuery = orderedBoardgamesRepository.findAll(); // ordersRepository.findAll();
+        return resultQuery;
+    }
+
     /*
-     * Returns every order
+     * Returns every order from an User
      */
     @RequestMapping
     public List<Order> findUserOrders() throws UnauthorizedException {

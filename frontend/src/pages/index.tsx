@@ -1,12 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchBoardgames, Boardgame } from './boardgames'
+
+async function CheckLogin() {
+    const uri = 'http://localhost:8080/api/check_login';
+  
+    const response = await fetch(uri, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    const boolean : boolean = await data;
+
+    return boolean;
+};
+
+async function setLoginComponentBuilder() {
+    const boolean = await CheckLogin();
+
+    if ( boolean == false){
+        return (<div>
+            <a href="http://localhost:8080/login">Log in</a>
+        </div>
+        ) ;
+    }else {
+        return (
+        <div>
+            <a href="http://localhost:8080/perform_logout">Log out</a>
+        </div>
+        
+        );
+    }
+
+}
+
+async function getMenuBarComponent() {
+    const isLogged = await CheckLogin();
+    if (isLogged == false) {
+        return null;
+    }
+
+    const uri = 'http://localhost:8080/api/check_login';
+  
+    const response = await fetch(uri, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    const boolean : boolean = await data;
+
+    if ( boolean == false ){ // isn't Admin
+        return (
+            <div>
+                <a href="http://localhost:3000/my-orders">I miei ordini</a>
+            </div>
+        );
+    }else { // is Admin
+        return (
+            <div>
+                <br></br>
+                <a href="http://localhost:3000/all-orders">Gestisci gli ordini</a>
+                <br></br>
+                <a href="http://localhost:3000/manage-boardgames">Gestisci boardgames</a>
+            </div>
+        );
+    }
+
+
+
+}
 
 const HomePage: React.FC = () => {
     const searchBoardgamesInstance = new SearchBoardgames();
     const [searchResults, setSearchResults] = useState<Boardgame[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearchClicked, setIsSearchClicked] = useState(false);
-    var amILoggedIn: boolean = checkAmILoggedIn();
+    const [loginComponent, setLoginComponent] = useState<JSX.Element | null>(null);
+    const [menuBarComponent, setMenuBarComponent] = useState<JSX.Element | null>(null);
+
+    useEffect(()=>{
+        //Login / Logout
+        setLoginComponentBuilder().then((element) => {
+            setLoginComponent(element);
+        });
+
+        // Menu Bar
+        getMenuBarComponent().then((element) => {
+            setMenuBarComponent(element);
+        });
+
+        //List of every boardgames
+        const results = searchBoardgamesInstance.handleSearch(searchTerm);
+        results.then((result) => setSearchResults(result));
+
+    }, []);
 
     //This method get called when the user click on the "Search" button
     //it updates searchResults variable with results from API call
@@ -16,28 +108,6 @@ const HomePage: React.FC = () => {
         setIsSearchClicked(true);
     };
 
-    function checkAmILoggedIn(): boolean {
-        const uri = 'http://localhost:8080/api/check_login'
-        const respon2 = fetch('http://localhost:8080/api/username');
-        console.log(respon2);
-        console.log("=================================");
-        fetch(uri, {method: 'GET'}
-            ).then((response) => {
-                console.log(response);
-                if ( response.ok){
-                    return response.json();
-                }
-            }).then((data)=>{
-                console.log("Returns: " + data);
-                return data;
-            }).catch((error) => {
-                return false;
-            })
-
-
-        return false;
-    }
-
     //this method get called when you change something in the input form
     //Change search term inside the search bar and set search clicked to 0
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,15 +115,25 @@ const HomePage: React.FC = () => {
         setIsSearchClicked(false);
     };
 
+    const handleAddToChartClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        const button = event.target as HTMLButtonElement;
+        const div = button.parentNode as HTMLDivElement;
+        const h2Element = div.querySelector('h2');
+        const name = h2Element?.textContent;
+        console.log('name:' + name);
+
+    }
+
+
+
     return (
             <div>
                 <h1>Welcome to Insecure Shop!</h1>
                 <div>
-                    <p> 
-                        {amILoggedIn==false  &&<a href="http://localhost:8080/login">Log in</a>}
-                        {amILoggedIn==true  && <p>You are logged in</p>}
-                    </p>
+                        {loginComponent}   
+                        {menuBarComponent}
                 </div>
+                <br></br>
 
                 <div>
                     <input
@@ -67,16 +147,16 @@ const HomePage: React.FC = () => {
                     <div>
                         {/* Here, I found out: React escapes characters */}
                         { isSearchClicked && searchTerm != '' && 
-                        <p>You searched for 
-                            <p dangerouslySetInnerHTML={{"__html": searchTerm}}/>
-                        </p>
+                            <p dangerouslySetInnerHTML={{"__html": "You searched for: " + searchTerm}}/>
                         } 
 
                         {searchResults.length > 0 && searchResults.map((boardgame, index) => (
                             <div key={index} className="border p-4">
                                 <h2 className="text-xl font-bold">{boardgame.name}</h2>
                                 <p className="text-gray-600"> {boardgame.description}</p>
-                                <span className="text-green-600 font-semibold"> {boardgame.price}</span>
+                                <span className="text-green-600 font-semibold">Prezzo: {boardgame.price} €</span>
+                                <br></br>
+                                <button onClick={handleAddToChartClick}>add to chart</button>
                             </div>
                         ))}
                     </div>

@@ -12,10 +12,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -49,25 +51,26 @@ public class SecurityConfiguration {
 
     @Bean
     public CorsFilter corsFilter() {
-        CorsConfiguration corsConfig = new CorsConfiguration();
-        /*
-         * corsConfig.addAllowedOrigin("*");
-         * corsConfig.addAllowedMethod("GET");
-         * corsConfig.addAllowedMethod("POST");
-         * corsConfig.addAllowedHeader("*");
-         */
+        CorsConfiguration corsConfigAll = new CorsConfiguration();
+        corsConfigAll.addAllowedOrigin("http://localhost:8080/");
+        corsConfigAll.addAllowedMethod("POST");
+        corsConfigAll.addAllowedMethod("GET");
+        corsConfigAll.addAllowedHeader("*");
 
         // Allows frontend connection in React
-        corsConfig.addAllowedOrigin("http://localhost:3000/");
-        corsConfig.addAllowedMethod("POST");
-        corsConfig.addAllowedMethod("GET");
-        corsConfig.addAllowedHeader("*");
 
         // Cookies
-        corsConfig.setAllowCredentials(true);
+        CorsConfiguration corsConfigReact = new CorsConfiguration();
+        corsConfigReact.setAllowCredentials(true);
+
+        corsConfigReact.addAllowedOrigin("http://localhost:3000/");
+        corsConfigReact.addAllowedMethod("POST");
+        corsConfigReact.addAllowedMethod("GET");
+        corsConfigReact.addAllowedHeader("*");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
+        source.registerCorsConfiguration("/**", corsConfigAll);
+        source.registerCorsConfiguration("/**", corsConfigReact);
 
         return new CorsFilter(source);
     }
@@ -92,17 +95,18 @@ public class SecurityConfiguration {
                 .antMatchers("/api/boardgames").permitAll()
                 .antMatchers("/api/login*").permitAll()
                 .antMatchers("/api/login_check/").permitAll()
+                .antMatchers("/api/isAdmin").permitAll()
                 .and()
                 .sessionManagement()
                 .sessionFixation().none()
                 .and()
                 .formLogin()
-                .loginProcessingUrl("/api/perform_login")
+                .loginProcessingUrl("/api/perform_login").permitAll()
                 .defaultSuccessUrl("http://localhost:3000/", true)
                 .and()
                 .logout() // //is not going to work because of HTTP
                 .logoutUrl("/api/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl("http://localhost:3000/") // React front end
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
                 .deleteCookies("JSESSIONID")
                 .permitAll();

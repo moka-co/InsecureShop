@@ -38,6 +38,10 @@ public class Order {
         return orderDate;
     }
 
+    public String getDate() {
+        return orderDate.toString().split(" ")[0];
+    }
+
     public double getPrice() {
         return price;
     }
