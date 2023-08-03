@@ -37,7 +37,6 @@ import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 import xyz.krsh.insecuresite.security.UserRepository;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/orders")
 public class OrdersController {
@@ -62,6 +61,7 @@ public class OrdersController {
         if ((userDetails.getUsername() instanceof String) == false) {
             throw new UnauthorizedException();
         }
+
         return userDetails.getUsername();
     }
 
@@ -84,12 +84,14 @@ public class OrdersController {
     }
 
     /*
-     * Returns every order from an User
+     * Returns every order from the current logged User
      */
-    @RequestMapping
-    public List<Order> findUserOrders() throws UnauthorizedException {
-        List<Order> resultQuery = ordersRepository.findByCustomerName(this.getLoggedUsername());
+    @RequestMapping("/")
+    public List<OrderedBoardgames> findUserOrders() throws UnauthorizedException {
+        String email = this.getLoggedUsername();
 
+        // List<Order> resultQuery = ordersRepository.findByCustomerName(email);
+        List<OrderedBoardgames> resultQuery = orderedBoardgamesRepository.findByCustomerName(email); // ordersRepository.findAll();
         return resultQuery;
     }
 
@@ -125,10 +127,12 @@ public class OrdersController {
 
     }
 
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @RequestMapping("/{orderId}/addBoardgame")
     public OrderedBoardgames addBoardgameToOrder(
             @PathVariable("orderId") int orderId,
-            @RequestParam("boardgameName") String boardgameName, @RequestParam("quantity") int quantity)
+            @RequestParam(value = "boardgameName") String boardgameName,
+            @RequestParam(value = "quantity") Integer quantity)
             throws ItemNotFoundException, UnauthorizedException {
 
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
@@ -138,7 +142,9 @@ public class OrdersController {
         if (queryOrder.isPresent() && queryBoardgame.isPresent()) {
 
             String email = this.getLoggedUsername();
-            if (queryOrder.get().getUser().getName() != email) {
+            String compareEmail = queryOrder.get().getUser().getId();
+
+            if (!compareEmail.equals(email)) { // In Java, strings are objects different from each other
                 throw new UnauthorizedException();
             }
 
@@ -154,6 +160,7 @@ public class OrdersController {
 
     }
 
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @RequestMapping("/{orderId}/delete")
     public String deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
@@ -177,9 +184,10 @@ public class OrdersController {
     }
 
     /*
-     * Add a new boardgame to the database by REST call
-     * Request parameters are: name, price, quantity and description
+     * Add a new order to the database
+     * Request parameters are: date
      */
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @GetMapping("/add")
     @ResponseBody
     public Order addBoardgameReq(
@@ -210,7 +218,6 @@ public class OrdersController {
     // Occurrs when you can't find any orders
     @ExceptionHandler({ ItemNotFoundException.class, NoSuchElementException.class, IndexOutOfBoundsException.class,
             EmptyResultDataAccessException.class })
-
     public ApiError handleIndexOutOfBoundsException() {
         return new ApiError("Order not found, retry", HttpStatus.NOT_FOUND);
 

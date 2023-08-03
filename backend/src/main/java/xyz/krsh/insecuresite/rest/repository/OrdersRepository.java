@@ -18,7 +18,7 @@ public interface OrdersRepository extends CrudRepository<Order, Integer> {
 
     Optional<Order> findById(Integer id);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email")
+    @Query("SELECT o FROM Order o WHERE o.user.id = :email")
     List<Order> findByCustomerName(@Param("email") String email);
 
     List<Order> findAll();

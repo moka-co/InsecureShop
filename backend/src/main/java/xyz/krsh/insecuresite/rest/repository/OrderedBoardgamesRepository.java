@@ -17,7 +17,10 @@ public interface OrderedBoardgamesRepository extends CrudRepository<OrderedBoard
     @Query("Select ob FROM OrderedBoardgames ob WHERE ob.order.orderId = :id")
     Optional<OrderedBoardgames> findById(Integer id);
 
-    @Query("SELECT ob FROM OrderedBoardgames ob WHERE ob.order.orderId = (SELECT o.orderId FROM Order o WHERE o.user.email = :email)")
+    // Having email, the associated ordere boardgame must be find
+    // orderedBoardgame is joined with orders based on orderId
+    // and then the result is filtered with orderId.id (aka email)
+    @Query("SELECT ob FROM OrderedBoardgames ob INNER JOIN ob.order o WHERE ob.order.user.id= :email")
     List<OrderedBoardgames> findByCustomerName(@Param("email") String email);
 
     List<OrderedBoardgames> findAll();
