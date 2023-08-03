@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SearchBoardgames, Boardgame } from './boardgames'
+import { format } from 'date-fns';
 
 async function CheckLogin() {
     const uri = 'http://localhost:8080/api/check_login';
@@ -71,22 +72,24 @@ async function getMenuBarComponent() {
         );
     }
 
-
-
 }
 
 const HomePage: React.FC = () => {
     const searchBoardgamesInstance = new SearchBoardgames();
+    const [savedToCart, setSavedToCart] = useState<{ [key: string] : number }>({});
     const [searchResults, setSearchResults] = useState<Boardgame[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearchClicked, setIsSearchClicked] = useState(false);
     const [loginComponent, setLoginComponent] = useState<JSX.Element | null>(null);
     const [menuBarComponent, setMenuBarComponent] = useState<JSX.Element | null>(null);
+    const [loggedIn, setLoggedIn] = useState<boolean>(false);
+    const [showCart, setShowCart] = useState<boolean>(false);
 
     useEffect(()=>{
         //Login / Logout
         setLoginComponentBuilder().then((element) => {
             setLoginComponent(element);
+            setLoggedIn(true);
         });
 
         // Menu Bar
@@ -121,10 +124,73 @@ const HomePage: React.FC = () => {
         const h2Element = div.querySelector('h2');
         const name = h2Element?.textContent;
         console.log('name:' + name);
+        if ( typeof name == 'string'){
+            updateCart(name);
+        }
 
     }
 
+    const updateCart = (key: string, increment: number = 1) => {
+        setSavedToCart((element) => (
+            {
+                ...element, [key]: (element[key] || 0) + increment,
+            }
+        ));
+    };
 
+    const handleShowCartButton = () => {
+        if ( showCart == false){
+            setShowCart(true);
+        }else{
+            setShowCart(false);
+        }
+
+    }
+
+    const handleRemoveBoardgameFromCartButton = (event: React.MouseEvent<HTMLButtonElement>, key: string) => {
+        updateCart(key,-1);
+
+        setSavedToCart((prevCart) =>  { //delete savedtoCart[key] from the array of objects if it is zero
+            const updatedCart = Object.keys(savedToCart).filter((cartKey) => cartKey != key || prevCart[key] !== 0);
+            const newCart :{ [key: string] : number } = { };
+            updatedCart.forEach((cartKey) => {
+                newCart[cartKey] = prevCart[cartKey];
+            });
+            return newCart;
+        });
+    }
+
+    const makeOrder = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        let uri = "http://localhost:8080/api/orders/add";
+        const currentDate = format(new Date(), 'dd-MM-yyyy');
+        console.log(currentDate);
+        uri = uri + "?date=" + currentDate;
+
+        //Fetch results from backend
+        const response = await fetch(
+        uri,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {'Content-Type': 'application/json'}
+        });
+
+        const jsonData = await response.json()
+
+        uri = "http://localhost:8080/api/orders/" + jsonData.id + "/addBoardgame?";
+        Object.keys(savedToCart).forEach(async (key) => {
+            let newUri = `http://localhost:8080/api/orders/${jsonData.id}/addBoardgame?boardgameName=${key}&quantity=${savedToCart[key]}`;
+            const response = await fetch(
+                newUri,
+                {
+                  method: 'GET',
+                  credentials: 'include',
+                  headers: {'Content-Type': 'application/json'}
+                });
+
+        });
+
+    }
 
     return (
             <div>
@@ -134,6 +200,32 @@ const HomePage: React.FC = () => {
                         {menuBarComponent}
                 </div>
                 <br></br>
+                <div>
+                    { loggedIn && 
+                        <button onClick={handleShowCartButton}>Mostra carrello <span id="cartLength" >({Object.keys(savedToCart).length})</span></button>
+                    }
+
+                    {
+                        showCart && Object.keys(savedToCart).length > 0 && (
+                            <div>
+                                <h2>Carrello</h2>
+                                <ul>
+                                { Object.keys(savedToCart).map((key) => ( 
+                                    savedToCart[key] > 0 && (
+                                    <li key={key}>
+                                        {key}: {savedToCart[key]} <button onClick={(event) => handleRemoveBoardgameFromCartButton(event, key)}>-</button>
+                                    </li> 
+                                    )
+                                ))  }
+                                </ul>
+                            <button onClick={(event) => makeOrder(event)} >Compra</button>
+                            </div>
+                        )
+                    }
+
+                    
+                    <br></br>
+                </div>
 
                 <div>
                     <input

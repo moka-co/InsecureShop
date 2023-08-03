@@ -15,35 +15,26 @@ const EveryOrder: React.FC = () => {
 
     }, []);
 
+
       // Group the orders by their IDs using the reduce method
-  const groupedOrders = searchResults.reduce((map, order) => {
-    const orderId = order.order.id;
+  const groupedOrders = searchResults.reduce((map, orderb) => {
+    
+    const orderId = orderb.order.id;
     if (!map.has(orderId)) {
       map.set(orderId, []);
     }
-    map.get(orderId)?.push([order.order, order.boardgame, order.quantity]);
+    map.get(orderId)?.push([orderb.order, orderb.boardgame, orderb.quantity]);
     return map;
   }, new Map<number, [Order, Boardgame, number][]>());
 
     return (
-        <div>
-            {/*searchResults.length > 0 && searchResults.map((ob, index) => (
-                        <div key={index} className="border p-4">
-                            <h2 className="text-xl font-bold">{ob.order.id}</h2>
-                            <p className="text-gray-600"> {ob.order.user.name}</p>
-                            <p> {ob.order.user.id} </p>
-                            <span className="text-green-600 font-semibold"> {ob.order.date}</span>
-                            <p>Game: {ob.boardgame.name}</p>
-                            <p>Quantity: {ob.quantity}</p>
-                            <p>Price: {ob.boardgame.price}</p>
-                        </div>
-            ))*/}
+    <div>
 
       {/* Render the search results */}
       <div>
         {searchResults.length > 0 && Array.from(groupedOrders).map(([orderId, orders], index) => (
           <div key={index}>
-            <h2 className="text-xl font-bold">Order ID: {orderId}</h2>
+            <h4 className="text-xl font-bold">Order ID: {orderId}</h4>
 
             {orders.map((order, subIndex) => (
               <div key={subIndex} className="border p-4">
@@ -62,6 +53,7 @@ const EveryOrder: React.FC = () => {
             ))}
           </div>
         ))}
+        
       </div>
     </div>
   );

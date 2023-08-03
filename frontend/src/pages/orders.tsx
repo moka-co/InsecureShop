@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { Boardgame } from './boardgames';
 
+
 export interface OrderedBoardgameId {
   orderId: number,
   boardgameName: string,
@@ -33,8 +34,24 @@ export class SearchEveryOrder {
   public async handleSearch(): Promise<OrderedBoardgame[]>{
 
     //probably there is a better way to do this:
-    const endpoint = 'http://localhost:8080/api/orders/admin';
+    let endpoint = 'http://localhost:8080/api/is_admin';
     console.log(endpoint);
+
+    let isAdminResponse = await fetch(
+      endpoint,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {'Content-type':'application/json'}
+      }
+    );
+
+    let jsonData = await isAdminResponse.json();
+    if ( jsonData == true ){
+      endpoint = 'http://localhost:8080/api/orders/admin';
+    }else {
+      endpoint='http://localhost:8080/api/orders/';
+    }
 
     //Fetch results from backend
     const response = await fetch(
@@ -44,7 +61,7 @@ export class SearchEveryOrder {
         credentials: 'include',
         headers: {'Content-Type': 'application/json'}
       });
-    const jsonData = await response.json();
+    jsonData = await response.json();
 
     const orders : OrderedBoardgame[] = jsonData;
     console.log(orders);
