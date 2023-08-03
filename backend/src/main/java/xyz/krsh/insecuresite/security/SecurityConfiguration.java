@@ -1,5 +1,7 @@
 package xyz.krsh.insecuresite.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,6 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @Configuration
@@ -50,35 +51,27 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration corsConfigAll = new CorsConfiguration();
-        corsConfigAll.addAllowedOrigin("http://localhost:8080/");
-        corsConfigAll.addAllowedMethod("POST");
-        corsConfigAll.addAllowedMethod("GET");
-        corsConfigAll.addAllowedHeader("*");
+    public CorsConfiguration corsConfiguration() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000/")); // Allow react front end
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowCredentials(true); // Cookies
+        config.addAllowedHeader("*");
+        config.setMaxAge(3600L);
+        return config;
+    }
 
-        // Allows frontend connection in React
-
-        // Cookies
-        CorsConfiguration corsConfigReact = new CorsConfiguration();
-        corsConfigReact.setAllowCredentials(true);
-
-        corsConfigReact.addAllowedOrigin("http://localhost:3000/");
-        corsConfigReact.addAllowedMethod("POST");
-        corsConfigReact.addAllowedMethod("GET");
-        corsConfigReact.addAllowedHeader("*");
-
+    @Bean
+    public UrlBasedCorsConfigurationSource CustomCorsFilterSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfigAll);
-        source.registerCorsConfiguration("/**", corsConfigReact);
-
-        return new CorsFilter(source);
+        source.registerCorsConfiguration("/**", corsConfiguration());
+        return source;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
-        http.cors().and().csrf().and()
+        http.cors().configurationSource(CustomCorsFilterSource()).and().csrf().and()
                 .authorizeRequests()
                 .antMatchers("/api/boardgames/*/delete")
                 .hasAuthority("admin")
