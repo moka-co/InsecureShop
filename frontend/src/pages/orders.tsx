@@ -14,7 +14,6 @@ export interface OrderedBoardgame {
   boardgame: Boardgame,
   quantity: number
 
-
 }
 
 export interface User {
@@ -33,9 +32,7 @@ export class SearchEveryOrder {
 
   public async handleSearch(): Promise<OrderedBoardgame[]>{
 
-    //probably there is a better way to do this:
     let endpoint = 'http://localhost:8080/api/is_admin';
-    console.log(endpoint);
 
     let isAdminResponse = await fetch(
       endpoint,

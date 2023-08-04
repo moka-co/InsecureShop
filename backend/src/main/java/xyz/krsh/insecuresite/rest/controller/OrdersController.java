@@ -179,7 +179,23 @@ public class OrdersController {
 
         }
 
-        ordersRepository.deleteById(orderId);
+        // https://stackoverflow.com/a/13252120
+        Optional<List<OrderedBoardgames>> orderedBoardgamesOptional = orderedBoardgamesRepository.findById(orderId);
+        if (orderedBoardgamesOptional.isPresent()) {
+            List<OrderedBoardgames> list = orderedBoardgamesOptional.get();
+            for (OrderedBoardgames ob : list) {
+                orderedBoardgamesRepository.delete(ob);
+            }
+
+            Optional<Order> order = ordersRepository.findById(orderId);
+            if (order.isPresent()) {
+                ordersRepository.delete(order.get());
+            }
+
+        }
+
+        // orderedBoardgamesRepository.deleteByOrderId(orderId);
+        // ordersRepository.deleteById(orderId);
         return "Deleted order";
     }
 

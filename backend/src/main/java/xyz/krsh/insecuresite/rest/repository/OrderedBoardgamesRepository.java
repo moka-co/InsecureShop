@@ -3,6 +3,7 @@ package xyz.krsh.insecuresite.rest.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,7 @@ import xyz.krsh.insecuresite.rest.dao.OrderedBoardgamesId;
 public interface OrderedBoardgamesRepository extends CrudRepository<OrderedBoardgames, OrderedBoardgamesId> {
 
     @Query("Select ob FROM OrderedBoardgames ob WHERE ob.order.orderId = :id")
-    Optional<OrderedBoardgames> findById(Integer id);
+    Optional<List<OrderedBoardgames>> findById(Integer id);
 
     // Having email, the associated ordere boardgame must be find
     // orderedBoardgame is joined with orders based on orderId
@@ -24,5 +25,9 @@ public interface OrderedBoardgamesRepository extends CrudRepository<OrderedBoard
     List<OrderedBoardgames> findByCustomerName(@Param("email") String email);
 
     List<OrderedBoardgames> findAll();
+
+    @Modifying // Required by DELETE statement
+    @Query("DELETE FROM OrderedBoardgames ob WHERE ob.order.orderId = :orderId")
+    void deleteByOrderId(@Param("orderId") Integer orderId);
 
 }
