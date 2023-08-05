@@ -71,7 +71,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // http builder configurations for authorize requests and form login (see below)
-        http.cors().configurationSource(CustomCorsFilterSource()).and().csrf().and()
+        http.cors().configurationSource(CustomCorsFilterSource()).and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/boardgames/*/delete")
                 .hasAuthority("admin")

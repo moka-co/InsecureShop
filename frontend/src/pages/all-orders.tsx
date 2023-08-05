@@ -23,7 +23,6 @@ const EveryOrder: React.FC = () => {
       }else {
         selectedOrders.push(orderId);
       }
-      console.log("selected orders: " + selectedOrders);
     }
 
     const handleDeleteOrderButton = async () => {

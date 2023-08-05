@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dao.Boardgame;
+import xyz.krsh.insecuresite.rest.dao.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
+import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/boardgames")
 public class BoardgameController {
@@ -30,12 +31,14 @@ public class BoardgameController {
     @Autowired
     BoardgameRepository repo;
 
+    @Autowired
+    OrderedBoardgamesRepository obrepo;
+
     /*
      * Returns every boardgame or the ones that match the query value
      */
     @GetMapping
     @ResponseBody
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm)
             throws ItemNotFoundException {
 
@@ -126,7 +129,19 @@ public class BoardgameController {
      */
     @GetMapping("/{name}/delete")
     public String deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
-        repo.deleteById(name);
+
+        Optional<List<OrderedBoardgames>> obQueryResult = obrepo.findByBoardgameName(name);
+        Optional<Boardgame> bQueryResult = repo.findById(name);
+
+        if (obQueryResult.isPresent() && bQueryResult.isPresent()) {
+            List<OrderedBoardgames> list = obQueryResult.get();
+            for (OrderedBoardgames ob : list) {
+                obrepo.delete(ob);
+            }
+
+            Boardgame bg = bQueryResult.get();
+            repo.delete(bg);
+        }
 
         return "Successfully deleted " + name + " ";
     }

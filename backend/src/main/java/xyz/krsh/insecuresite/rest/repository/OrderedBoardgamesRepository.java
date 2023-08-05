@@ -15,6 +15,9 @@ import xyz.krsh.insecuresite.rest.dao.OrderedBoardgamesId;
 @Repository
 public interface OrderedBoardgamesRepository extends CrudRepository<OrderedBoardgames, OrderedBoardgamesId> {
 
+    @Query("Select ob from OrderedBoardgames ob WHERE ob.boardgame.name = :name")
+    Optional<List<OrderedBoardgames>> findByBoardgameName(String name);
+
     @Query("Select ob FROM OrderedBoardgames ob WHERE ob.order.orderId = :id")
     Optional<List<OrderedBoardgames>> findById(Integer id);
 
