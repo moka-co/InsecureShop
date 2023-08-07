@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 export interface Boardgame {
   name: String,
-  price: Float32Array,
+  price: number,
   quantity: number,
   description: String
 }

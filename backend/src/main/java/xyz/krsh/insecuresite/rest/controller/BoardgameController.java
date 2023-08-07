@@ -92,6 +92,8 @@ public class BoardgameController {
             HttpServletRequest request) {
 
         List<Boardgame> queryResult = repo.findByNameContaining(name);
+        // Optional<List<OrderedBoardgames>> queryResultOb =
+        // obrepo.findByBoardgameName(name);
         Boardgame boardgame;
 
         if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
@@ -99,8 +101,6 @@ public class BoardgameController {
         } else {
             boardgame = queryResult.get(0);
         }
-
-        repo.delete(boardgame); // Delete the old boardgame
 
         /* Check existance of params */
         boolean priceParamExists = request.getParameterMap().containsKey("price");
@@ -118,7 +118,7 @@ public class BoardgameController {
             boardgame.setDescription(description);
         }
 
-        repo.save(boardgame); // Save the new boardgame
+        repo.update(boardgame); // update the boardgames with new values
         return boardgame;
     }
 

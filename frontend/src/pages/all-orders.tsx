@@ -64,7 +64,6 @@ const EveryOrder: React.FC = () => {
           <div key={index}>
             <h4 className="text-xl font-bold">Order ID: {orderId}</h4>
             <button onClick={handleDeleteOrderButton}>elimina</button>
-            <button>modifica</button>
             <br></br>
 
             {orders.map((order, subIndex) => (
