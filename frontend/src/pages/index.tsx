@@ -118,7 +118,8 @@ const HomePage: React.FC = () => {
         setIsSearchClicked(false);
     };
 
-    const handleAddToChartClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    //Add clicked element to cart
+    const handleAddToCartClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
         const button = event.target as HTMLButtonElement;
         const div = button.parentNode as HTMLDivElement;
         const h2Element = div.querySelector('h2');
@@ -130,6 +131,7 @@ const HomePage: React.FC = () => {
 
     }
 
+    //Take a key and an increment, add +1 to an existing element inside object that represent cart
     const updateCart = (key: string, increment: number = 1) => {
         setSavedToCart((element) => (
             {
@@ -138,6 +140,7 @@ const HomePage: React.FC = () => {
         ));
     };
 
+    //Click to show or hide cart button
     const handleShowCartButton = () => {
         if ( showCart == false){
             setShowCart(true);
@@ -147,6 +150,8 @@ const HomePage: React.FC = () => {
 
     }
 
+    //Onclick of a button, remove a boardgame from button, uses updateCart function
+    //Also checks if the savedToCart[key] is zero, then delete this from the object
     const handleRemoveBoardgameFromCartButton = (event: React.MouseEvent<HTMLButtonElement>, key: string) => {
         updateCart(key,-1);
 
@@ -161,10 +166,9 @@ const HomePage: React.FC = () => {
     }
 
     const makeOrder = async (event: React.MouseEvent<HTMLButtonElement>) => {
-        let uri = "http://localhost:8080/api/orders/add";
         const currentDate = format(new Date(), 'dd-MM-yyyy');
-        console.log(currentDate);
-        uri = uri + "?date=" + currentDate;
+
+        let uri = `http://localhost:8080/api/orders/add?date=${currentDate}`;
 
         //Fetch results from backend
         const response = await fetch(
@@ -177,7 +181,7 @@ const HomePage: React.FC = () => {
 
         const jsonData = await response.json()
 
-        uri = "http://localhost:8080/api/orders/" + jsonData.id + "/addBoardgame?";
+        uri = "http://localhost:8080/api/orders/" +  encodeURIComponent(jsonData.id) + "/addBoardgame?";
         Object.keys(savedToCart).forEach(async (key) => {
             let newUri = `http://localhost:8080/api/orders/${jsonData.id}/addBoardgame?boardgameName=${key}&quantity=${savedToCart[key]}`;
             const response = await fetch(
@@ -189,6 +193,7 @@ const HomePage: React.FC = () => {
                 });
 
         });
+        window.location.reload();
 
     }
 
@@ -248,7 +253,7 @@ const HomePage: React.FC = () => {
                                 <p className="text-gray-600"> {boardgame.description}</p>
                                 <span className="text-green-600 font-semibold">Prezzo: {boardgame.price} €</span>
                                 <br></br>
-                                <button onClick={handleAddToChartClick}>add to chart</button>
+                                <button onClick={handleAddToCartClick}>add to chart</button>
                             </div>
                         ))}
                     </div>
