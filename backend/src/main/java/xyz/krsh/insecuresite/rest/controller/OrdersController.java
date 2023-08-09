@@ -1,19 +1,12 @@
 package xyz.krsh.insecuresite.rest.controller;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,60 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.exceptions.UnauthorizedException;
-import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.Order;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
-import xyz.krsh.insecuresite.rest.entities.OrderedBoardgamesId;
-import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
-import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
-import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
-import xyz.krsh.insecuresite.security.MyUserDetails;
-import xyz.krsh.insecuresite.security.UserRepository;
+import xyz.krsh.insecuresite.rest.service.OrdersService;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrdersController {
 
     @Autowired
-    OrdersRepository ordersRepository;
+    OrdersService ordersService;
 
-    @Autowired
-    BoardgameRepository boardgameRepository;
-
-    @Autowired
-    OrderedBoardgamesRepository orderedBoardgamesRepository;
-
-    @Autowired
-    UserRepository userRepo;
-
-    public String getLoggedUsername() throws UnauthorizedException {
-        // Get Authentication info
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-
-        if ((userDetails.getUsername() instanceof String) == false) {
-            throw new UnauthorizedException();
-        }
-
-        return userDetails.getUsername();
-    }
-
-    public boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        boolean isAdmin = authentication.isAuthenticated() && authentication.getAuthorities().stream()
-                .anyMatch(authority -> "admin".equals(authority.getAuthority()));
-
-        return isAdmin;
-    }
 
     @RequestMapping("/admin")
     public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
-        if (isAdmin() != true) {
-            throw new UnauthorizedException();
-        }
-        List<OrderedBoardgames> resultQuery = orderedBoardgamesRepository.findAll(); // ordersRepository.findAll();
-        return resultQuery;
+        return ordersService.findAllOrders();
     }
 
     /*
@@ -88,11 +42,7 @@ public class OrdersController {
      */
     @RequestMapping("/")
     public List<OrderedBoardgames> findUserOrders() throws UnauthorizedException {
-        String email = this.getLoggedUsername();
-
-        // List<Order> resultQuery = ordersRepository.findByCustomerName(email);
-        List<OrderedBoardgames> resultQuery = orderedBoardgamesRepository.findByCustomerName(email); // ordersRepository.findAll();
-        return resultQuery;
+        return ordersService.findUserOrders();
     }
 
     /*
@@ -100,17 +50,7 @@ public class OrdersController {
      */
     @RequestMapping("/{orderId}/")
     public Order findOrder(@PathVariable("orderId") int orderId) throws ItemNotFoundException, UnauthorizedException {
-        Optional<Order> resultQuery = ordersRepository.findById(orderId);
-        if (resultQuery.isEmpty() == true) {
-            throw new ItemNotFoundException();
-
-        }
-        if (this.getLoggedUsername() != resultQuery.get().getUser().getName()) {
-            throw new UnauthorizedException();
-        }
-
-        return resultQuery.get();
-
+        return ordersService.findOrder(orderId);
     }
 
     /*
@@ -119,15 +59,14 @@ public class OrdersController {
     @RequestMapping("/{orderId}/ob")
     public List<OrderedBoardgames> getAllOrderedBoardgamesFromUser(@PathVariable("orderId") int orderId)
             throws UnauthorizedException {
-        String email = this.getLoggedUsername();
-
-        List<OrderedBoardgames> query = orderedBoardgamesRepository.findByCustomerName(email);
-
-        return query;
+        return ordersService.getAllOrderedBoardgamesFromUser(orderId);
 
     }
 
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+    /*
+     * Add boardgame to an order
+     * Requires orderId, boardgame name and the quantity of boardgames to order
+     */
     @RequestMapping("/{orderId}/addBoardgame")
     public OrderedBoardgames addBoardgameToOrder(
             @PathVariable("orderId") int orderId,
@@ -135,68 +74,14 @@ public class OrdersController {
             @RequestParam(value = "quantity") Integer quantity)
             throws ItemNotFoundException, UnauthorizedException {
 
-        Optional<Order> queryOrder = ordersRepository.findById(orderId);
-        Optional<Boardgame> queryBoardgame = boardgameRepository.findById(boardgameName);
-
-        OrderedBoardgames ob = null;
-        if (queryOrder.isPresent() && queryBoardgame.isPresent()) {
-
-            String email = this.getLoggedUsername();
-            String compareEmail = queryOrder.get().getUser().getId();
-
-            if (!compareEmail.equals(email)) { // In Java, strings are objects different from each other
-                throw new UnauthorizedException();
-            }
-
-            OrderedBoardgamesId id = new OrderedBoardgamesId(orderId, boardgameName);
-
-            ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), quantity);
-            orderedBoardgamesRepository.save(ob);
-        } else {
-            throw new ItemNotFoundException();
-        }
-
-        return ob;
+        return ordersService.addBoardgameToOrder(orderId, boardgameName, quantity);
 
     }
 
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @RequestMapping("/{orderId}/delete")
     public String deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
-        Optional<Order> resultQuery = ordersRepository.findById(orderId);
-
-        if (resultQuery.isEmpty()) {
-            throw new ItemNotFoundException();
-        }
-
-        String email = this.getLoggedUsername();
-
-        // Admin can do whatever they want, users cannot delete other user's orders
-        if (isAdmin() == false
-                && email != resultQuery.get().getUser().getId()) {
-            throw new UnauthorizedException();
-
-        }
-
-        // https://stackoverflow.com/a/13252120
-        Optional<List<OrderedBoardgames>> orderedBoardgamesOptional = orderedBoardgamesRepository.findById(orderId);
-        if (orderedBoardgamesOptional.isPresent()) {
-            List<OrderedBoardgames> list = orderedBoardgamesOptional.get();
-            for (OrderedBoardgames ob : list) {
-                orderedBoardgamesRepository.delete(ob);
-            }
-
-            Optional<Order> order = ordersRepository.findById(orderId);
-            if (order.isPresent()) {
-                ordersRepository.delete(order.get());
-            }
-
-        }
-
-        // orderedBoardgamesRepository.deleteByOrderId(orderId);
-        // ordersRepository.deleteById(orderId);
-        return "Deleted order";
+        return ordersService.deleteOrder(orderId);
     }
 
     /*
@@ -210,26 +95,12 @@ public class OrdersController {
             @RequestParam("date") String dateString,
             HttpServletRequest request) throws Exception {
 
-        // Get Date info
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("dd-MM-yyyy").parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
-        }
-
-        String email = this.getLoggedUsername();
-
-        Order toSave = new Order();
-        toSave.setUser(userRepo.findById(email).get());
-        toSave.setOrderDate(date);
-
-        Order result = ordersRepository.save(toSave);
-
-        return result;
+        return ordersService.addOrder(dateString, request);
     }
+
+    /*
+     * Exceptions Handlers
+     */
 
     // Occurrs when you can't find any orders
     @ExceptionHandler({ ItemNotFoundException.class, NoSuchElementException.class, IndexOutOfBoundsException.class,
