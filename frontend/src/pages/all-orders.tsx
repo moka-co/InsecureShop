@@ -44,7 +44,7 @@ const EveryOrder: React.FC = () => {
     }
 
 
-      // Group the orders by their IDs using the reduce method
+  // Group the orders by their IDs using the reduce method
   const groupedOrders = searchResults.reduce((map, orderb) => {
     
     const orderId = orderb.order.id;

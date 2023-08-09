@@ -41,7 +41,6 @@ public class BoardgameController {
      * Get an existing boardgame querying using his name (primary key)
      * Returns only the first result
      */
-
     @GetMapping("/{name}")
     @ResponseBody
     Boardgame getById(@PathVariable String name) throws IndexOutOfBoundsException {

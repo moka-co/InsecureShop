@@ -20,9 +20,6 @@ export class SearchBoardgames {
 
     const boardgames : Boardgame[] = jsonData;
     
-    // Frontend-side filter, it's useless since it is managed by the backend
-    //const filteredProducts = boardgames.filter((bg) => bg.name.toLowerCase().includes(q) );
-    
     return boardgames;
   }
 

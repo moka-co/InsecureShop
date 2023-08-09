@@ -24,9 +24,6 @@ public interface BoardgameRepository extends CrudRepository<Boardgame, String> {
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE Boardgame b SET b.quantity = :#{#boardgame.quantity}, b.price = :#{#boardgame.price}, b.description = :#{#boardgame.description} WHERE b.name = :#{#boardgame.name}")
-    // @Query("UPDATE Boardgame b SET b.quantity= :boardgame.quantity, b.price=
-    // :boardgame.price, b.description= :boardgame.description WHERE b.name=
-    // :boardgame.name")
     void update(@Param("boardgame") Boardgame boardgame);
 
 }
