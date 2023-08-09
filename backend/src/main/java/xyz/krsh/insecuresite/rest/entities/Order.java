@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.rest.dao;
+package xyz.krsh.insecuresite.rest.entities;
 
 import java.util.Date;
 import javax.persistence.*;

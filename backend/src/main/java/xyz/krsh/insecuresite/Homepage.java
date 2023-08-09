@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import xyz.krsh.insecuresite.rest.dao.Boardgame;
+import xyz.krsh.insecuresite.rest.entities.Boardgame;
 
 @Controller
 public class Homepage {

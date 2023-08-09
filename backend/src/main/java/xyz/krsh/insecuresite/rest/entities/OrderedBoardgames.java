@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.rest.dao;
+package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;

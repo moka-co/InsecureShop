@@ -14,14 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
-import xyz.krsh.insecuresite.rest.dao.Boardgame;
-import xyz.krsh.insecuresite.rest.dao.OrderedBoardgames;
-import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
-import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
+import xyz.krsh.insecuresite.rest.entities.Boardgame;
+import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
 import java.util.List;
-import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
@@ -29,10 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 public class BoardgameController {
 
     @Autowired
-    BoardgameRepository repo;
-
-    @Autowired
-    OrderedBoardgamesRepository obrepo;
+    BoardgameService boardgameService;
 
     /*
      * Returns every boardgame or the ones that match the query value
@@ -41,13 +34,7 @@ public class BoardgameController {
     @ResponseBody
     public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm)
             throws ItemNotFoundException {
-
-        List<Boardgame> query = repo.findByNameContaining(queryTerm);
-        if (query.isEmpty()) {
-            throw new ItemNotFoundException();
-        } else {
-            return query;
-        }
+        return boardgameService.findByNameContaining(queryTerm);
     }
 
     /*
@@ -58,7 +45,7 @@ public class BoardgameController {
     @GetMapping("/{name}")
     @ResponseBody
     Boardgame getById(@PathVariable String name) throws IndexOutOfBoundsException {
-        return repo.findByNameContaining(name).get(0);
+        return boardgameService.getById(name);
     }
 
     /*
@@ -73,8 +60,7 @@ public class BoardgameController {
             @RequestParam("description") String description,
             HttpServletRequest request) throws MissingServletRequestParameterException {
 
-        Boardgame result = repo.save(new Boardgame(name, price, quantity, description));
-        return result;
+        return boardgameService.addBoardgame(name, price, quantity, description);
     }
 
     /*
@@ -89,37 +75,9 @@ public class BoardgameController {
             @RequestParam(value = "price", required = false) Float price,
             @RequestParam(value = "quantity", required = false) Integer quantity,
             @RequestParam(value = "description", required = false) String description,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws ItemNotFoundException {
 
-        List<Boardgame> queryResult = repo.findByNameContaining(name);
-        // Optional<List<OrderedBoardgames>> queryResultOb =
-        // obrepo.findByBoardgameName(name);
-        Boardgame boardgame;
-
-        if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
-            throw new IndexOutOfBoundsException();
-        } else {
-            boardgame = queryResult.get(0);
-        }
-
-        /* Check existance of params */
-        boolean priceParamExists = request.getParameterMap().containsKey("price");
-        boolean quantityParamExists = request.getParameterMap().containsKey("quantity");
-        boolean descriptionParamExists = request.getParameterMap().containsKey("description");
-
-        // if price exists as parameter in the HTTP request, change the price
-        if (priceParamExists) {
-            boardgame.setPrice(price);
-        }
-        if (quantityParamExists) {
-            boardgame.setQuantity(quantity);
-        }
-        if (descriptionParamExists) {
-            boardgame.setDescription(description);
-        }
-
-        repo.update(boardgame); // update the boardgames with new values
-        return boardgame;
+        return boardgameService.editBoardgame(name, price, quantity, description, request);
     }
 
     /*
@@ -129,21 +87,7 @@ public class BoardgameController {
      */
     @GetMapping("/{name}/delete")
     public String deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
-
-        Optional<List<OrderedBoardgames>> obQueryResult = obrepo.findByBoardgameName(name);
-        Optional<Boardgame> bQueryResult = repo.findById(name);
-
-        if (obQueryResult.isPresent() && bQueryResult.isPresent()) {
-            List<OrderedBoardgames> list = obQueryResult.get();
-            for (OrderedBoardgames ob : list) {
-                obrepo.delete(ob);
-            }
-
-            Boardgame bg = bQueryResult.get();
-            repo.delete(bg);
-        }
-
-        return "Successfully deleted " + name + " ";
+        return boardgameService.deleteBoardgame(name);
     }
 
     /*
@@ -153,7 +97,6 @@ public class BoardgameController {
     // Occurrs when you can't find any boardgames
     @ExceptionHandler({ ItemNotFoundException.class, IndexOutOfBoundsException.class,
             EmptyResultDataAccessException.class })
-
     public ApiError handleIndexOutOfBoundsException() {
         return new ApiError("Bordgame not found, retry", HttpStatus.NOT_FOUND);
 
@@ -161,7 +104,7 @@ public class BoardgameController {
 
     @ExceptionHandler({ MissingServletRequestParameterException.class })
     public ApiError handleMissingParametersException() {
-        return new ApiError("Bad Paremeters: required name, price, quantity and description", HttpStatus.BAD_REQUEST);
+        return new ApiError("Bad Parameters: required name, price, quantity and description", HttpStatus.BAD_REQUEST);
 
     }
 

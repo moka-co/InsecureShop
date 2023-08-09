@@ -9,8 +9,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import xyz.krsh.insecuresite.rest.dao.OrderedBoardgames;
-import xyz.krsh.insecuresite.rest.dao.OrderedBoardgamesId;
+import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
+import xyz.krsh.insecuresite.rest.entities.OrderedBoardgamesId;
 
 @Repository
 public interface OrderedBoardgamesRepository extends CrudRepository<OrderedBoardgames, OrderedBoardgamesId> {

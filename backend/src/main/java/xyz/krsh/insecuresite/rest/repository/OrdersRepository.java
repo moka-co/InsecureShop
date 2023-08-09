@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import xyz.krsh.insecuresite.rest.dao.Order;
+import xyz.krsh.insecuresite.rest.entities.Order;
 
 /*
  * Implements the Repository pattern for Boardgame by extending the CrudRepository

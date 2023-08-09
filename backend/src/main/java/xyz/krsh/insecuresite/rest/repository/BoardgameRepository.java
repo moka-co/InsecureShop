@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import xyz.krsh.insecuresite.rest.dao.Boardgame;
+import xyz.krsh.insecuresite.rest.entities.Boardgame;
 
 import java.util.List;
 
