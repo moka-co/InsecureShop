@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.security;
+package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.*;
 

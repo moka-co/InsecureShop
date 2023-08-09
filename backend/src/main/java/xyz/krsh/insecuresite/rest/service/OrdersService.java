@@ -22,8 +22,8 @@ import xyz.krsh.insecuresite.rest.entities.OrderedBoardgamesId;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
+import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
-import xyz.krsh.insecuresite.security.UserRepository;
 
 @Service
 public class OrdersService {

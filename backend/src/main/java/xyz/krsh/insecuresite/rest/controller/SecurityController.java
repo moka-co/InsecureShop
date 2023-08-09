@@ -1,11 +1,10 @@
-package xyz.krsh.insecuresite.security;
+package xyz.krsh.insecuresite.rest.controller;
 
 import java.security.Principal;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RestController
 public class SecurityController {
 
-    // In currentUserName(), principal may be null, therefore return a custom
-    // ApiError
     @ExceptionHandler({ NullPointerException.class })
     public ApiError handleNullPointerException() {
         return new ApiError("You're not logged in", HttpStatus.NOT_FOUND);
@@ -34,14 +31,16 @@ public class SecurityController {
 
     }
 
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @RequestMapping(value = "/api/check_login", method = RequestMethod.GET)
     @ResponseBody
     public boolean checkAmILoggedIn(Principal principal) {
-        if (principal == null) {
-            return false;
-        }
-        return true;
+        return principal == null ? false : true;
+        /*
+         * if (principal == null) {
+         * return false;
+         * }
+         * return true;
+         */
     }
 
     @RequestMapping(value = "/api/is_admin", method = RequestMethod.GET)

@@ -3,8 +3,6 @@ package xyz.krsh.insecuresite.rest.entities;
 import java.util.Date;
 import javax.persistence.*;
 
-import xyz.krsh.insecuresite.security.User;
-
 @Entity
 @Table(name = "Orders")
 public class Order {

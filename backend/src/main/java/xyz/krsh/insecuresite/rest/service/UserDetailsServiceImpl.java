@@ -1,10 +1,14 @@
-package xyz.krsh.insecuresite.security;
+package xyz.krsh.insecuresite.rest.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import xyz.krsh.insecuresite.rest.entities.User;
+import xyz.krsh.insecuresite.rest.repository.UserRepository;
+import xyz.krsh.insecuresite.security.MyUserDetails;
 
 public class UserDetailsServiceImpl implements UserDetailsService {
 
