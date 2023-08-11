@@ -8,7 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import xyz.krsh.insecuresite.exceptions.ApiError;
 
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,16 +16,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RestController
 public class SecurityController {
 
-    @ExceptionHandler({ NullPointerException.class })
-    public ApiError handleNullPointerException() {
-        return new ApiError("You're not logged in", HttpStatus.NOT_FOUND);
-
-    }
-
     @RequestMapping(value = "/api/username", method = RequestMethod.GET)
     @ResponseBody
     public String currentUserName(Principal principal) {
-
         return principal.toString();
 
     }
@@ -35,12 +27,6 @@ public class SecurityController {
     @ResponseBody
     public boolean checkAmILoggedIn(Principal principal) {
         return principal == null ? false : true;
-        /*
-         * if (principal == null) {
-         * return false;
-         * }
-         * return true;
-         */
     }
 
     @RequestMapping(value = "/api/is_admin", method = RequestMethod.GET)
@@ -52,6 +38,12 @@ public class SecurityController {
                 .anyMatch(authority -> "admin".equals(authority.getAuthority()));
 
         return isAdmin;
+    }
+
+    @ExceptionHandler({ NullPointerException.class })
+    public ApiError handleNullPointerException() {
+        return new ApiError("You're not logged in", HttpStatus.NOT_FOUND);
+
     }
 
 }

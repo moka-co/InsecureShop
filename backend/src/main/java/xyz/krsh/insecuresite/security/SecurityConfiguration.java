@@ -13,11 +13,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import xyz.krsh.insecuresite.rest.service.UserDetailsServiceImpl;
+import xyz.krsh.insecuresite.security.filters.CustomLoginFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -92,10 +94,12 @@ public class SecurityConfiguration {
                 .and()
                 .sessionManagement()
                 .sessionFixation().none()
-                .and()
+                .and().addFilterBefore(new CustomLoginFilter(), UsernamePasswordAuthenticationFilter.class) // Look for
+                // https://docs.spring.io/spring-security/servlet/architecture.html#servlet-filters-review
                 .formLogin()
-                .loginProcessingUrl("/api/perform_login").permitAll()
+                .loginProcessingUrl("/api/perform_login")
                 .defaultSuccessUrl("http://localhost:3000/", true)
+                .permitAll()
                 .and()
                 .logout() // //is not going to work because of HTTP
                 .logoutUrl("/api/perform_logout") // https://stackoverflow.com/questions/5023951/spring-security-unable-to-logout?rq=3
