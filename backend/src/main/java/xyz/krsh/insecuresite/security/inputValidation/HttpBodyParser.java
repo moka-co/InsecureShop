@@ -11,7 +11,6 @@ public class HttpBodyParser {
         Map<String, String> formDataMap = new HashMap<String, String>();
 
         for (Entry<String, String[]> entry : parameterMap.entrySet()) {
-            System.out.println(entry.getKey());
             String[] paramValues = entry.getValue();
             if (paramValues.length == 1) {
                 formDataMap.put(entry.getKey(), paramValues[0]);

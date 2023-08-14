@@ -24,6 +24,7 @@ public class BoardgameService {
     OrderedBoardgamesRepository orderedBoardgameRepository;
 
     public List<Boardgame> findByNameContaining(String queryTerm) throws ItemNotFoundException {
+        System.out.println("Received: " + queryTerm);
         List<Boardgame> queryResult = boardgameRepository.findByNameContaining(queryTerm);
 
         if (queryResult.isEmpty()) {

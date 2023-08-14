@@ -21,6 +21,7 @@ public interface BoardgameRepository extends CrudRepository<Boardgame, String> {
 
     List<Boardgame> findAll();
 
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE Boardgame b SET b.quantity = :#{#boardgame.quantity}, b.price = :#{#boardgame.price}, b.description = :#{#boardgame.description} WHERE b.name = :#{#boardgame.name}")
