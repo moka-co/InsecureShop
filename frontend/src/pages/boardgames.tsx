@@ -11,7 +11,8 @@ export class SearchBoardgames {
 
   public async handleSearch(q: string): Promise<Boardgame[]>{
 
-    const endpoint = `http://localhost:8080/api/boardgames?q=${q}`;
+    let encodedQ = encodeURIComponent(q);
+    const endpoint = `http://localhost:8080/api/boardgames?q=${encodedQ}`;
     console.log(endpoint);
 
     //Fetch results from backend
