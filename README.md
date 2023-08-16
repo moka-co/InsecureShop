@@ -1,2 +1,12 @@
 # InsecureShop
-Try hack this boardgame shop!
+
+How to run this project
+
+**Prerequisites**
+- MySQL Database
+- Maven for JDK 11
+- NodeJS for React
+
+**Frontend**
+- cd frontend
+- 
