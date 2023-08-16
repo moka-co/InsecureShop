@@ -250,7 +250,7 @@ const HomePage: React.FC = () => {
                         {searchResults.length > 0 && searchResults.map((boardgame, index) => (
                             <div key={index} className="border p-4">
                                 <h2 className="text-xl font-bold">{boardgame.name}</h2>
-                                <p className="text-gray-600"> {boardgame.description}</p>
+                                <p dangerouslySetInnerHTML={{"__html": "" + boardgame.description}}/>
                                 <span className="text-green-600 font-semibold">Prezzo: {boardgame.price} €</span>
                                 <br></br>
                                 <button onClick={handleAddToCartClick}>add to chart</button>
