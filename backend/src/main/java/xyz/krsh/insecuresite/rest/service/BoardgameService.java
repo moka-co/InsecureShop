@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.owasp.esapi.ESAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +25,20 @@ public class BoardgameService {
     OrderedBoardgamesRepository orderedBoardgameRepository;
 
     public List<Boardgame> findByNameContaining(String queryTerm) throws ItemNotFoundException {
-        System.out.println("Received: " + queryTerm);
-        //TODO: Add Input Validation SQL injection, use ESAPI encoder
         List<Boardgame> queryResult = boardgameRepository.findByNameContaining(queryTerm);
 
         if (queryResult.isEmpty()) {
             throw new ItemNotFoundException();
+        }
+
+        /*
+         * Example of canonicalization then encoding for HTML
+         */
+        for (Boardgame b : queryResult) {
+            String descr = b.getDescription();
+            String canonForm = ESAPI.encoder().canonicalize(descr);
+            String encodedDescr = ESAPI.encoder().encodeForHTML(canonForm);
+            b.setDescription(encodedDescr);
         }
 
         return queryResult;
