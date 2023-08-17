@@ -14,7 +14,7 @@ import javax.persistence.*;
 public class Boardgame {
 
     @Id
-    private String name = null;
+    private String name;
 
     @Column
     private float price = 0.0f;
@@ -23,7 +23,7 @@ public class Boardgame {
     private int quantity = 0;
 
     @Column
-    private String description = null;
+    private String description = "";
 
     public Boardgame() { // Required by JPA
 
