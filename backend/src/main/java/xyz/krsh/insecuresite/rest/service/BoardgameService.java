@@ -6,6 +6,8 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import org.owasp.esapi.ESAPI;
+import org.owasp.esapi.codecs.MySQLCodec;
+import org.owasp.esapi.codecs.MySQLCodec.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 
 @Service
 public class BoardgameService {
+    MySQLCodec codec = new MySQLCodec(Mode.STANDARD);
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -36,9 +39,9 @@ public class BoardgameService {
          */
         for (Boardgame b : queryResult) {
             String descr = b.getDescription();
-            String canonForm = ESAPI.encoder().canonicalize(descr);
-            String encodedDescr = ESAPI.encoder().encodeForHTML(canonForm);
-            b.setDescription(encodedDescr);
+            String canonForm = ESAPI.encoder().canonicalize(descr, false, false);
+            descr = ESAPI.encoder().encodeForHTML(canonForm);
+            b.setDescription(descr);
         }
 
         return queryResult;
@@ -82,6 +85,10 @@ public class BoardgameService {
             boardgame.setQuantity(quantity);
         }
         if (descriptionParamExists) {
+
+            // Encode for SQL
+            description = ESAPI.encoder().canonicalize(description);
+            description = ESAPI.encoder().encodeForSQL(codec, description);
             boardgame.setDescription(description);
         }
 
