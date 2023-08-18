@@ -1,6 +1,10 @@
 package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /* 
     This class represents a boardgame.
@@ -13,15 +17,20 @@ import javax.persistence.*;
 @Table(name = "Boardgame")
 public class Boardgame {
 
+    @NotNull
     @Id
     private String name;
 
+    @DecimalMin("0.0")
     @Column
     private float price = 0.0f;
 
+    @Min(0)
     @Column
     private int quantity = 0;
 
+    @NotNull
+    @Size(max = 1025)
     @Column
     private String description = "";
 

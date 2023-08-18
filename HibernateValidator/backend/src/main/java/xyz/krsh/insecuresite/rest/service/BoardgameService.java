@@ -2,10 +2,12 @@ package xyz.krsh.insecuresite.rest.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-
-import org.owasp.esapi.ESAPI;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import org.owasp.esapi.codecs.MySQLCodec;
 import org.owasp.esapi.codecs.MySQLCodec.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 @Service
 public class BoardgameService {
     MySQLCodec codec = new MySQLCodec(Mode.STANDARD);
+
+    private static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -36,12 +40,26 @@ public class BoardgameService {
 
         /*
          * Example of canonicalization then encoding for HTML
+         * 
+         * for (Boardgame b : queryResult) {
+         * String descr = b.getDescription();
+         * String canonForm = ESAPI.encoder().canonicalize(descr, false, false);
+         * descr = ESAPI.encoder().encodeForHTML(canonForm);
+         * b.setDescription(descr);
+         * }
          */
+
         for (Boardgame b : queryResult) {
-            String descr = b.getDescription();
-            String canonForm = ESAPI.encoder().canonicalize(descr, false, false);
-            descr = ESAPI.encoder().encodeForHTML(canonForm);
-            b.setDescription(descr);
+            Set<ConstraintViolation<Boardgame>> myConstraintViolations = validator.validate(b);
+            for (ConstraintViolation<Boardgame> c : myConstraintViolations) {
+                System.out.println(c.getPropertyPath());
+                System.out.println(c.getMessage());
+            }
+            if (myConstraintViolations.size() > 1) {
+                System.out.println("Violation detected");
+            } else {
+                System.out.println("No violation detected");
+            }
         }
 
         return queryResult;
@@ -87,13 +105,14 @@ public class BoardgameService {
         if (descriptionParamExists) {
 
             // Encode for SQL
-            description = ESAPI.encoder().canonicalize(description);
-            description = ESAPI.encoder().encodeForSQL(codec, description);
+            // description = ESAPI.encoder().canonicalize(description);
+            // description = ESAPI.encoder().encodeForSQL(codec, description);
             boardgame.setDescription(description);
         }
 
         // update the boardgames with new values
         boardgameRepository.update(boardgame);
+
         return boardgame;
     }
 

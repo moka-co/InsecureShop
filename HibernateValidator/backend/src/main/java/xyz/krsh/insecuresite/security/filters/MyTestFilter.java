@@ -9,15 +9,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.errors.IntrusionException;
 import org.owasp.esapi.errors.ValidationException;
-import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
+//@Component
 public class MyTestFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         if (request.getMethod().equals("GET") && request.getRequestURI().contains("edit")) {
             String descr = request.getParameter("description");
             if (descr != null) {
@@ -34,7 +35,7 @@ public class MyTestFilter extends OncePerRequestFilter {
 
         }
 
-        //Comment the follow to block request if exception occurrs
+        // Comment the follow to block request if exception occurrs
         filterChain.doFilter(request, response);
     }
 
