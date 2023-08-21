@@ -2,11 +2,13 @@ package xyz.krsh.insecuresite.rest.entities;
 
 import java.util.Date;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "Orders")
 public class Order {
 
+    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int orderId;
@@ -18,11 +20,10 @@ public class Order {
     @Column
     private Date orderDate;
 
-    private double price = 0.0;
-
     public Order() {
     }
 
+    @NotNull
     public int getId() {
         return orderId;
     }
@@ -38,10 +39,6 @@ public class Order {
 
     public String getDate() {
         return orderDate.toString().split(" ")[0];
-    }
-
-    public double getPrice() {
-        return price;
     }
 
     public void setUser(User user) {

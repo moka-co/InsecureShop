@@ -6,6 +6,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
+
 /* 
     This class represents a boardgame.
     A board 
@@ -32,6 +34,7 @@ public class Boardgame {
     @NotNull
     @Size(max = 1025)
     @Column
+    @NoHtml
     private String description = "";
 
     public Boardgame() { // Required by JPA

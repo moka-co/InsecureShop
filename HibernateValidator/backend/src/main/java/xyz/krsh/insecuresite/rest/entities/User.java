@@ -1,11 +1,14 @@
 package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "User")
 public class User {
 
+    @NotNull
     @Id
     @Column
     private String email;
@@ -22,7 +25,13 @@ public class User {
     public User() {
     }
 
+    @Email(regexp = "^[A-Za-z0-9._%'-]+@[A-Za-z0-9.-]+\\.[a-zA-Z]{2,4}$")
+
     public String getId() {
+        return email;
+    }
+
+    public String getEmail() {
         return email;
     }
 

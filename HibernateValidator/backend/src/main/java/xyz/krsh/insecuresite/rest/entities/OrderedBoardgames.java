@@ -4,6 +4,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
+import javax.validation.Valid;
 
 /*
  * Represent Many-To-Many Relationship between Orders and Boardgames
@@ -16,10 +17,12 @@ public class OrderedBoardgames {
     @EmbeddedId
     private OrderedBoardgamesId id = new OrderedBoardgamesId();
 
+    @Valid //Bean constraint that validate Object graphs
     @ManyToOne
     @MapsId("orderId")
     private Order order;
 
+    @Valid
     @ManyToOne
     @MapsId("boardgameName")
     private Boardgame boardgame;
