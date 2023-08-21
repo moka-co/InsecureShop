@@ -1,13 +1,13 @@
 package xyz.krsh.insecuresite.rest.service;
 
-import xyz.krsh.insecuresite.security.inputValidation.ESAPIAuthenticationFormValidator;
+import xyz.krsh.insecuresite.security.inputValidation.HibernateValidationAuthenticationForm;
 
 public class LoginValidatorService {
 
-    ESAPIAuthenticationFormValidator validator;
+    HibernateValidationAuthenticationForm validator;
 
     public LoginValidatorService() {
-        validator = new ESAPIAuthenticationFormValidator();
+        validator = new HibernateValidationAuthenticationForm();
     }
 
 }

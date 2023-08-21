@@ -5,11 +5,10 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import xyz.krsh.insecuresite.security.inputValidation.ESAPIAuthenticationFormValidator;
+import xyz.krsh.insecuresite.security.inputValidation.HibernateValidationAuthenticationForm;
 
 @Component
 public class CustomLoginFilter extends OncePerRequestFilter {
@@ -25,9 +24,10 @@ public class CustomLoginFilter extends OncePerRequestFilter {
          * Test if email and password are valid during login
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
-            ESAPIAuthenticationFormValidator validator = new ESAPIAuthenticationFormValidator();
+            HibernateValidationAuthenticationForm validator = new HibernateValidationAuthenticationForm();
             validator.testAuthenticationForm(request.getParameterMap());
         }
+
         filterChain.doFilter(request, response);
 
     }
