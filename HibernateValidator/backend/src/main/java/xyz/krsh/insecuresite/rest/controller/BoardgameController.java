@@ -19,6 +19,7 @@ import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 
 @RestController
 @RequestMapping("/api/boardgames")
@@ -57,7 +58,7 @@ public class BoardgameController {
             @RequestParam("price") float price,
             @RequestParam("quantity") int quantity,
             @RequestParam("description") String description,
-            HttpServletRequest request) throws MissingServletRequestParameterException {
+            HttpServletRequest request) throws MissingServletRequestParameterException, ConstraintViolationException {
 
         return boardgameService.addBoardgame(name, price, quantity, description);
     }
@@ -74,7 +75,7 @@ public class BoardgameController {
             @RequestParam(value = "price", required = false) Float price,
             @RequestParam(value = "quantity", required = false) Integer quantity,
             @RequestParam(value = "description", required = false) String description,
-            HttpServletRequest request) throws ItemNotFoundException {
+            HttpServletRequest request) throws ItemNotFoundException, ConstraintViolationException {
 
         return boardgameService.editBoardgame(name, price, quantity, description, request);
     }
@@ -104,6 +105,12 @@ public class BoardgameController {
     @ExceptionHandler({ MissingServletRequestParameterException.class })
     public ApiError handleMissingParametersException() {
         return new ApiError("Bad Parameters: required name, price, quantity and description", HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler({ ConstraintViolationException.class })
+    public ApiError handleConstraintViolationException() {
+        return new ApiError("Invalid input", HttpStatus.FORBIDDEN);
 
     }
 

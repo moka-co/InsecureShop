@@ -8,8 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import org.owasp.esapi.codecs.MySQLCodec;
-import org.owasp.esapi.codecs.MySQLCodec.Mode;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,6 @@ import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 
 @Service
 public class BoardgameService {
-    MySQLCodec codec = new MySQLCodec(Mode.STANDARD);
 
     private static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -38,30 +36,6 @@ public class BoardgameService {
             throw new ItemNotFoundException();
         }
 
-        /*
-         * Example of canonicalization then encoding for HTML
-         * 
-         * for (Boardgame b : queryResult) {
-         * String descr = b.getDescription();
-         * String canonForm = ESAPI.encoder().canonicalize(descr, false, false);
-         * descr = ESAPI.encoder().encodeForHTML(canonForm);
-         * b.setDescription(descr);
-         * }
-         */
-
-        for (Boardgame b : queryResult) {
-            Set<ConstraintViolation<Boardgame>> myConstraintViolations = validator.validate(b);
-            for (ConstraintViolation<Boardgame> c : myConstraintViolations) {
-                System.out.println(c.getPropertyPath());
-                System.out.println(c.getMessage());
-            }
-            if (myConstraintViolations.size() > 1) {
-                System.out.println("Violation detected");
-            } else {
-                System.out.println("No violation detected");
-            }
-        }
-
         return queryResult;
 
     }
@@ -73,6 +47,19 @@ public class BoardgameService {
 
     public Boardgame addBoardgame(String name, float price, int quantity, String description) {
         Boardgame newBoardgame = new Boardgame(name, price, quantity, description);
+
+        Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(newBoardgame);
+
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
+                System.out.println(
+                        "Invalid input for class: " + cv.getRootBeanClass());
+                System.out.println(
+                        "Invalid value: " + cv.getInvalidValue() + " triggered message error: " +
+                                cv.getMessage());
+            }
+        }
+
         boardgameRepository.save(newBoardgame);
         return newBoardgame;
 
@@ -103,16 +90,21 @@ public class BoardgameService {
             boardgame.setQuantity(quantity);
         }
         if (descriptionParamExists) {
-
-            // Encode for SQL
-            // description = ESAPI.encoder().canonicalize(description);
-            // description = ESAPI.encoder().encodeForSQL(codec, description);
             boardgame.setDescription(description);
         }
 
-        // update the boardgames with new values
-        boardgameRepository.update(boardgame);
+        Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(boardgame);
+        // if there are constraint violations
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
+                System.out.println(
+                        "Invalid input for class: " + cv.getRootBeanClass());
+                System.out.println(
+                        "Invalid value: " + cv.getInvalidValue() + " triggered message error: " + cv.getMessage());
+            }
+        }
 
+        boardgameRepository.update(boardgame);
         return boardgame;
     }
 
