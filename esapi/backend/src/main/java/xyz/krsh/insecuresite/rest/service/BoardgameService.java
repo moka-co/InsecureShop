@@ -54,7 +54,13 @@ public class BoardgameService {
     }
 
     public Boardgame addBoardgame(String name, float price, int quantity, String description) {
-        Boardgame newBoardgame = new Boardgame(name, price, quantity, description);
+
+        // Example sql encoding
+        String encodedDescr = ESAPI.encoder().canonicalize(description, false, false);
+        encodedDescr = ESAPI.encoder().encodeForSQL(codec, encodedDescr);
+
+        Boardgame newBoardgame = new Boardgame(name, price, quantity, encodedDescr);
+
         boardgameRepository.save(newBoardgame);
         return newBoardgame;
 
