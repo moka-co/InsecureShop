@@ -27,7 +27,7 @@ public class ESAPIAuthenticationFormValidator {
 
     public void testIsValidEmail(String email) {
         if (instance.isValidInput("authentication", email, "Email", 100, false) == false) {
-            System.out.println("Invalid email!!");
+            System.out.println("Invalid email!");
         } else {
             System.out.println("Email is ok");
         }

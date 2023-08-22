@@ -1,7 +1,9 @@
 package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -19,15 +21,18 @@ import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
 @Table(name = "Boardgame")
 public class Boardgame {
 
+    @Size(max = 1000)
     @NotNull
     @Id
     private String name;
 
     @DecimalMin("0.0")
+    @DecimalMax("100.0")
     @Column
     private float price = 0.0f;
 
     @Min(0)
+    @Max(100)
     @Column
     private int quantity = 0;
 
