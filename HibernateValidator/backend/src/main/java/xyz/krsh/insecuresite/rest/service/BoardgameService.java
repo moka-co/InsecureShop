@@ -1,5 +1,6 @@
 package xyz.krsh.insecuresite.rest.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -9,10 +10,12 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
@@ -21,9 +24,6 @@ import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageI
 
 @Service
 public class BoardgameService {
-
-    // private static Validator validator =
-    // Validation.buildDefaultValidatorFactory().getValidator();
 
     private static Validator validator = Validation.byDefaultProvider().configure()
             .messageInterpolator(new MyMessageInterpolator())
@@ -52,16 +52,20 @@ public class BoardgameService {
         return boardgame;
     }
 
-    public Boardgame addBoardgame(String name, float price, int quantity, String description) {
-        Boardgame newBoardgame = new Boardgame(name, price, quantity, description);
+    public Boardgame addBoardgame(String name, float price, int quantity, String description)
+            throws IllegalAccessException, InvocationTargetException {
+        BoardgameDto boardgameDto = new BoardgameDto(name, price, quantity, description);
 
-        Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(newBoardgame);
+        Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(boardgameDto);
 
         if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
+            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
                 System.out.println(cv.getMessage());
             }
         }
+
+        Boardgame newBoardgame = new Boardgame();
+        BeanUtils.copyProperties(newBoardgame, boardgameDto);
 
         boardgameRepository.save(newBoardgame);
         return newBoardgame;

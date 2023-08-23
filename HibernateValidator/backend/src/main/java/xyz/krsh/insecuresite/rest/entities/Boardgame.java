@@ -1,15 +1,6 @@
 package xyz.krsh.insecuresite.rest.entities;
 
 import javax.persistence.*;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
-import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
 
 /* 
     This class represents a boardgame.
@@ -21,31 +12,19 @@ import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
 @Entity
 @Table(name = "Boardgame")
 public class Boardgame {
-
-    @Size(max = 1000)
-    @NotNull
     @Id
     private String name;
 
-    @DecimalMin("0.0")
-    @DecimalMax("100.0")
     @Column
     private float price = 0.0f;
 
-    @Min(0)
-    @Max(100)
     @Column
     private int quantity = 0;
 
-    @NotNull
-    @Size(max = 1025)
     @Column
-    @NoHtml
-    @Pattern(regexp = "^[a-zA-Z0-9._%'\"+-<>,;:/()]+$", message = "Characters not allowed")
     private String description = "";
 
-    public Boardgame() { // Required by JPA
-
+    public Boardgame() {
     }
 
     public Boardgame(String name) {

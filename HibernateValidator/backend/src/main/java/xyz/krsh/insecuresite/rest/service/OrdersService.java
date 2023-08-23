@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.Order;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgamesId;
+import xyz.krsh.insecuresite.rest.entities.User;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
@@ -199,12 +201,16 @@ public class OrdersService {
             System.out.println("Exception: " + e);
         }
 
-        String email = this.getLoggedId();
+        // TODO: OrderDto
+        String loggedEmail = this.getLoggedId();
+        User user = userRepo.findById(loggedEmail).get();
 
+        OrderDto orderDto = new OrderDto();
+
+        String email = this.getLoggedId();
         Order toSave = new Order();
         toSave.setUser(userRepo.findById(email).get());
         toSave.setOrderDate(date);
-
         Order result = ordersRepository.save(toSave);
 
         return result;

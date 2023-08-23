@@ -17,6 +17,7 @@ import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
@@ -58,7 +59,8 @@ public class BoardgameController {
             @RequestParam("price") float price,
             @RequestParam("quantity") int quantity,
             @RequestParam("description") String description,
-            HttpServletRequest request) throws MissingServletRequestParameterException, ConstraintViolationException {
+            HttpServletRequest request) throws MissingServletRequestParameterException, ConstraintViolationException,
+            IllegalAccessException, InvocationTargetException {
 
         return boardgameService.addBoardgame(name, price, quantity, description);
     }
