@@ -35,7 +35,7 @@ public class BoardgameService {
         }
 
         /*
-         * Example of canonicalization then encoding for HTML
+         * Example of canonicalization + encoding then encoding for HTML
          */
         for (Boardgame b : queryResult) {
             String descr = b.getDescription();
