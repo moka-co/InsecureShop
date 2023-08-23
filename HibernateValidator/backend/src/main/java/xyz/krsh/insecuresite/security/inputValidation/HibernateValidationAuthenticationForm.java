@@ -20,7 +20,7 @@ public class HibernateValidationAuthenticationForm {
 
     }
 
-    public void testAuthenticationForm(Map<String, String[]> requestParameterMap) throws IOException {
+    public boolean testAuthenticationForm(Map<String, String[]> requestParameterMap) throws IOException {
         Map<String, String> formDataMap = new HttpBodyParser().convertHttpBodyToMap(requestParameterMap);
         if (formDataMap.get("username") != null && formDataMap.get("password") != null) { // then it's a Form
 
@@ -30,12 +30,15 @@ public class HibernateValidationAuthenticationForm {
                 for (ConstraintViolation<User> cv : constraintViolations) {
                     System.out.println(
                             "Invalid input for class: " + cv.getRootBeanClass());
-                    System.out.println("Invalid value: " + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
+                    System.out.println(
+                            "Invalid value: " + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
 
                 }
+                return false;
             }
 
         }
+        return true;
     }
 
 }

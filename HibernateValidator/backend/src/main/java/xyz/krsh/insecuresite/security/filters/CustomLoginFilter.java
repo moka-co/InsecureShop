@@ -22,13 +22,17 @@ public class CustomLoginFilter extends OncePerRequestFilter {
 
         /*
          * Test if email and password are valid during login
+         * If input is not valid, don't pass the response to the filterChain
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
             HibernateValidationAuthenticationForm validator = new HibernateValidationAuthenticationForm();
-            validator.testAuthenticationForm(request.getParameterMap());
-        }
+            if (validator.testAuthenticationForm(request.getParameterMap())) {
+                filterChain.doFilter(request, response);
 
-        filterChain.doFilter(request, response);
+            } else {
+                return;
+            }
+        }
 
     }
 
