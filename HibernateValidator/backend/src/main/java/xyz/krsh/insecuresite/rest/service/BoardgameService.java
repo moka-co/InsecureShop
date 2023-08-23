@@ -57,17 +57,11 @@ public class BoardgameService {
 
         Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(newBoardgame);
 
-        /*
-         * if (constraintViolations.size() > 0) {
-         * for (ConstraintViolation<Boardgame> cv : constraintViolations) {
-         * System.out.println(
-         * "Invalid input for class: " + cv.getRootBeanClass());
-         * System.out.println(
-         * "Invalid value: " + cv.getInvalidValue() + " triggered message error: " +
-         * cv.getMessage());
-         * }
-         * }
-         */
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
+                System.out.println(cv.getMessage());
+            }
+        }
 
         boardgameRepository.save(newBoardgame);
         return newBoardgame;
