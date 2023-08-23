@@ -3,17 +3,22 @@ package xyz.krsh.insecuresite.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
@@ -53,16 +58,15 @@ public class BoardgameController {
      * Add a new boardgame to the database by REST call
      * Request parameters are: name, price, quantity and description
      */
-    @GetMapping("/add")
-    @ResponseBody
-    public Boardgame addBoardgameReq(@RequestParam("name") String name,
-            @RequestParam("price") float price,
-            @RequestParam("quantity") int quantity,
-            @RequestParam("description") String description,
-            HttpServletRequest request) throws MissingServletRequestParameterException, ConstraintViolationException,
-            IllegalAccessException, InvocationTargetException {
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResponseEntity<String> addBoardgameReq(@RequestBody BoardgameDto boardgameDto)
+            throws IllegalAccessException, InvocationTargetException {
 
-        return boardgameService.addBoardgame(name, price, quantity, description);
+        boardgameService.addBoardgame(boardgameDto);
+
+        String responseData = "Received data: " + boardgameDto.toString();
+        return new ResponseEntity<String>(responseData, HttpStatus.ACCEPTED);
+
     }
 
     /*

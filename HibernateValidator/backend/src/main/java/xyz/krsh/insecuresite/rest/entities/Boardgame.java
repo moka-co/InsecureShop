@@ -12,6 +12,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Boardgame")
 public class Boardgame {
+    
     @Id
     private String name;
 

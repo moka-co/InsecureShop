@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.xml.bind.ValidationException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,26 +53,27 @@ public class BoardgameService {
         return boardgame;
     }
 
-    public Boardgame addBoardgame(String name, float price, int quantity, String description)
+    public void addBoardgame(BoardgameDto boardgameDto)
             throws IllegalAccessException, InvocationTargetException {
-        BoardgameDto boardgameDto = new BoardgameDto(name, price, quantity, description);
 
+        // TODO: Why if you throw validate it isn't thrown ValidationException (in this
+        // instance?)
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(boardgameDto);
 
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
                 System.out.println(cv.getMessage());
             }
+        } else {
+            Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
+            BeanUtils.copyProperties(newBoardgame, boardgameDto);
+
+            boardgameRepository.save(newBoardgame);
         }
-
-        Boardgame newBoardgame = new Boardgame();
-        BeanUtils.copyProperties(newBoardgame, boardgameDto);
-
-        boardgameRepository.save(newBoardgame);
-        return newBoardgame;
 
     }
 
+    //TODO: make this method with BoardgameDto
     public Boardgame editBoardgame(String name, Float price, Integer quantity, String description,
             HttpServletRequest request)
             throws ItemNotFoundException {
@@ -113,6 +115,7 @@ public class BoardgameService {
         return boardgame;
     }
 
+    //Todo: Make this method with BoardgameDto
     public String deleteBoardgame(String name) {
         Optional<List<OrderedBoardgames>> obQueryResult = orderedBoardgameRepository.findByBoardgameName(name);
         Optional<Boardgame> bQueryResult = boardgameRepository.findById(name);

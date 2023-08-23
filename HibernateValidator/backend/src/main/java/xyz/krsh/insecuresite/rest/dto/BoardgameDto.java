@@ -10,16 +10,18 @@ import javax.validation.constraints.Size;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class BoardgameDto {
 
-    @Size(max = 1000)
     @NotNull
+    @Size(max = 1000)
     private String name;
 
     @DecimalMin("0.0")
