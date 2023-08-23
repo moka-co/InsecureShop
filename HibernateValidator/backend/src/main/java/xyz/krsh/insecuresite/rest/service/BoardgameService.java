@@ -17,11 +17,17 @@ import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
+import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
 @Service
 public class BoardgameService {
 
-    private static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    // private static Validator validator =
+    // Validation.buildDefaultValidatorFactory().getValidator();
+    private static Validator validator = Validation.byDefaultProvider().configure()
+            .messageInterpolator(new MyMessageInterpolator())
+            .buildValidatorFactory()
+            .getValidator();
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -50,15 +56,17 @@ public class BoardgameService {
 
         Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(newBoardgame);
 
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
-                System.out.println(
-                        "Invalid input for class: " + cv.getRootBeanClass());
-                System.out.println(
-                        "Invalid value: " + cv.getInvalidValue() + " triggered message error: " +
-                                cv.getMessage());
-            }
-        }
+        /*
+         * if (constraintViolations.size() > 0) {
+         * for (ConstraintViolation<Boardgame> cv : constraintViolations) {
+         * System.out.println(
+         * "Invalid input for class: " + cv.getRootBeanClass());
+         * System.out.println(
+         * "Invalid value: " + cv.getInvalidValue() + " triggered message error: " +
+         * cv.getMessage());
+         * }
+         * }
+         */
 
         boardgameRepository.save(newBoardgame);
         return newBoardgame;
@@ -95,12 +103,10 @@ public class BoardgameService {
 
         Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(boardgame);
         // if there are constraint violations
+
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<Boardgame> cv : constraintViolations) {
-                System.out.println(
-                        "Invalid input for class: " + cv.getRootBeanClass());
-                System.out.println(
-                        "Invalid value: " + cv.getInvalidValue() + " triggered message error: " + cv.getMessage());
+                System.out.println(cv.getMessage());
             }
         }
 
