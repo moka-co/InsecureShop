@@ -26,12 +26,14 @@ public class CustomLoginFilter extends OncePerRequestFilter {
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
             HibernateValidationAuthenticationForm validator = new HibernateValidationAuthenticationForm();
-            if (validator.testAuthenticationForm(request.getParameterMap())) {
+            if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
                 filterChain.doFilter(request, response);
-
             } else {
                 return;
             }
+        } else {
+            // Else, ok
+            filterChain.doFilter(request, response);
         }
 
     }
