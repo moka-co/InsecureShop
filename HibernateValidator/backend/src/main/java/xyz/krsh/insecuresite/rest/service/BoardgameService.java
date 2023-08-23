@@ -24,6 +24,7 @@ public class BoardgameService {
 
     // private static Validator validator =
     // Validation.buildDefaultValidatorFactory().getValidator();
+
     private static Validator validator = Validation.byDefaultProvider().configure()
             .messageInterpolator(new MyMessageInterpolator())
             .buildValidatorFactory()
