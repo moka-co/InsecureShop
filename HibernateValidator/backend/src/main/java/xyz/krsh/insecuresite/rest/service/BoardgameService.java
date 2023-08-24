@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -71,6 +70,7 @@ public class BoardgameService {
 
     }
 
+    // TODO: Refactoring needed
     public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
             throws ItemNotFoundException {
         Boardgame boardgame;

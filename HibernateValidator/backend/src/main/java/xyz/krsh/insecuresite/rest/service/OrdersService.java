@@ -5,30 +5,38 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.jaxb.SpringDataJaxb.OrderDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.exceptions.UnauthorizedException;
+import xyz.krsh.insecuresite.rest.dto.OrderedBoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.Order;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgamesId;
-import xyz.krsh.insecuresite.rest.entities.User;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
 import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
+import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
 @Service
 public class OrdersService {
+
+    private static Validator validator = Validation.byDefaultProvider().configure()
+            .messageInterpolator(new MyMessageInterpolator())
+            .buildValidatorFactory()
+            .getValidator();
 
     @Autowired
     OrdersRepository ordersRepository;
@@ -126,10 +134,20 @@ public class OrdersService {
     /*
      * Add boardgame to an order
      */
-    public OrderedBoardgames addBoardgameToOrder(int orderId, String boardgameName, Integer quantity)
+    public String addBoardgameToOrder(int orderId, OrderedBoardgameDto obd)
             throws ItemNotFoundException, UnauthorizedException {
+
+        Set<ConstraintViolation<OrderedBoardgameDto>> constraintViolations = validator.validate(obd);
+
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<OrderedBoardgameDto> cv : constraintViolations) {
+                System.out.println(cv.getMessage());
+            }
+            return "Error: invalid input";
+        }
+
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
-        Optional<Boardgame> queryBoardgame = boardgameRepository.findById(boardgameName);
+        Optional<Boardgame> queryBoardgame = boardgameRepository.findById(obd.getName());
 
         OrderedBoardgames ob = null;
 
@@ -143,15 +161,15 @@ public class OrdersService {
                 throw new UnauthorizedException();
             }
 
-            OrderedBoardgamesId id = new OrderedBoardgamesId(orderId, boardgameName);
+            OrderedBoardgamesId id = new OrderedBoardgamesId(orderId, obd.getName());
 
-            ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), quantity);
+            ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), obd.getQuantity());
             orderedBoardgamesRepository.save(ob);
         } else {
             throw new ItemNotFoundException();
         }
 
-        return ob;
+        return "Added successfully " + obd.getQuantity() + " of " + obd.getName() + " to Order id " + orderId;
 
     }
 
@@ -190,7 +208,8 @@ public class OrdersService {
         return "Order deleted successfully";
     }
 
-    public Order addOrder(String dateString, HttpServletRequest request) throws UnauthorizedException {
+    public String addOrder(String dateString)
+            throws UnauthorizedException {
         // Get Date info
         Date date = null;
         try {
@@ -201,19 +220,13 @@ public class OrdersService {
             System.out.println("Exception: " + e);
         }
 
-        // TODO: OrderDto
-        String loggedEmail = this.getLoggedId();
-        User user = userRepo.findById(loggedEmail).get();
-
-        OrderDto orderDto = new OrderDto();
-
-        String email = this.getLoggedId();
-        Order toSave = new Order();
-        toSave.setUser(userRepo.findById(email).get());
-        toSave.setOrderDate(date);
+        String email = this.getLoggedId(); // Get email from current session
+        Order toSave = new Order(); // make new order
+        toSave.setUser(userRepo.findById(email).get()); // Set User got from user repository
+        toSave.setOrderDate(date); // set date
         Order result = ordersRepository.save(toSave);
 
-        return result;
+        return "Added: " + result.getId();
 
     }
 
