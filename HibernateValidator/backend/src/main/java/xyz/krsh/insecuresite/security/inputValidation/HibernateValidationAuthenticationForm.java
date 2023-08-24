@@ -10,7 +10,12 @@ import javax.validation.Validator;
 
 import xyz.krsh.insecuresite.rest.entities.User;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 public class HibernateValidationAuthenticationForm {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private Validator instance;
 
@@ -28,11 +33,8 @@ public class HibernateValidationAuthenticationForm {
             Set<ConstraintViolation<User>> constraintViolations = instance.validateValue(User.class, "id", username);
             if (constraintViolations.size() > 0) {
                 for (ConstraintViolation<User> cv : constraintViolations) {
-                    System.out.println(
-                            "Invalid input for class: " + cv.getRootBeanClass());
-                    System.out.println(
-                            "Invalid value: " + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
-
+                    logger.warn("Invalid input for class: " + cv.getRootBeanClass() + " - Invalid value "
+                            + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
                 }
                 return false;
             }

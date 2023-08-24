@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
+import javax.validation.ValidationException;
 import javax.validation.Validator;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,13 @@ import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 @Service
 public class BoardgameService {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     private static Validator validator = Validation.byDefaultProvider().configure()
             .messageInterpolator(new MyMessageInterpolator())
@@ -34,6 +40,7 @@ public class BoardgameService {
     @Autowired
     OrderedBoardgamesRepository orderedBoardgameRepository;
 
+    // This method is used in front end query and API calls
     public List<Boardgame> findByNameContaining(String queryTerm) throws ItemNotFoundException {
         List<Boardgame> queryResult = boardgameRepository.findByNameContaining(queryTerm);
 
@@ -45,87 +52,104 @@ public class BoardgameService {
 
     }
 
-    public Boardgame getById(String name) {
-        Boardgame boardgame = boardgameRepository.findByNameContaining(name).get(0);
-        return boardgame;
-    }
-
     public void addBoardgame(BoardgameDto boardgameDto)
             throws IllegalAccessException, InvocationTargetException {
 
-        // TODO: Why if you throw validate it isn't thrown ValidationException (in this
-        // instance?)
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(boardgameDto);
 
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                System.out.println(cv.getMessage());
+                logger.warn(cv.getMessage());
             }
-        } else {
-            Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
-            BeanUtils.copyProperties(newBoardgame, boardgameDto);
-
-            boardgameRepository.save(newBoardgame);
+            throw new ValidationException("Invalid input received when adding a boardgame");
         }
+
+        Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
+        BeanUtils.copyProperties(newBoardgame, boardgameDto);
+        boardgameRepository.save(newBoardgame);
 
     }
 
-    // TODO: Refactoring needed
-    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
-            throws ItemNotFoundException {
-        Boardgame boardgame;
-        boardgameDto.setName(boardgameName);
-        boolean flag = false;
+    // TODO: first version of edit Boardgame()
+    public void editBoardgame2(String boardgameName, BoardgameDto boardgameDto)
+            throws ItemNotFoundException, IndexOutOfBoundsException {
 
-        List<Boardgame> queryResult = this.findByNameContaining(boardgameName);
-        if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
-            throw new IndexOutOfBoundsException();
-        } else {
-            boardgame = queryResult.get(0);
-        }
+        // List<Boardgame> queryResult = findByNameContaining(boardgameName);
+        Boardgame boardgame = findByNameContaining(boardgameName).get(0);
 
         if (boardgameDto.getPrice() > 0.0) {
             Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                     "price", boardgameDto.getPrice());
             if (constraintViolations.size() > 0) {
                 for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    System.out.println(cv.getMessage());
+                    logger.warn(cv.getMessage());
                 }
-            } else {
-                flag = true;
-                boardgame.setPrice(boardgameDto.getPrice());
+                throw new IllegalArgumentException(
+                        "Invalid price value when trying to edit boardgame " + boardgameName);
             }
-
+            boardgame.setPrice(boardgameDto.getPrice());
         }
-        if (boardgameDto.getQuantity() > 0) {
+
+        if (boardgameDto.getQuantity() != 0) {
             Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                     "quantity", boardgameDto.getQuantity());
             if (constraintViolations.size() > 0) {
                 for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    System.out.println(cv.getMessage());
+                    logger.warn(cv.getMessage());
                 }
-            } else {
-                flag = true;
-                boardgame.setQuantity(boardgameDto.getQuantity());
+                throw new IllegalArgumentException(
+                        "Invalid quantity when trying to edit boardgame " + boardgameName);
             }
+            boardgame.setQuantity(boardgameDto.getQuantity());
 
         }
-        if (boardgameDto.getDescription() != null && !boardgameDto.getDescription().equals("")) {
+        if (boardgameDto.getDescription() != null) {
             Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                     "description", boardgameDto.getDescription());
             if (constraintViolations.size() > 0) {
                 for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    System.out.println(cv.getMessage());
+                    logger.warn(cv.getMessage());
                 }
-            } else {
-                flag = true;
-                boardgame.setDescription(boardgameDto.getDescription());
+                throw new IllegalArgumentException(
+                        "Invalid description when trying to edit boardgame " + boardgameName);
+            }
+            boardgame.setDescription(boardgameDto.getDescription());
+        }
+
+        boardgameRepository.update(boardgame);
+    }
+
+    //TODO: another version of editBoardgame()
+    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
+            throws ItemNotFoundException, IndexOutOfBoundsException, IllegalAccessException, InvocationTargetException {
+
+        // List<Boardgame> queryResult = findByNameContaining(boardgameName);
+        Boardgame boardgame = findByNameContaining(boardgameName).get(0);
+        BoardgameDto newBoardgameDto = new BoardgameDto();
+        BeanUtils.copyProperties(newBoardgameDto, boardgame);
+
+        if (boardgameDto.getPrice() > 0.0) {
+            newBoardgameDto.setPrice(boardgameDto.getPrice());
+        }
+
+        if (boardgameDto.getQuantity() != 0) {
+            newBoardgameDto.setQuantity(boardgameDto.getQuantity());
+        }
+        if (boardgameDto.getDescription() != null) {
+            newBoardgameDto.setDescription(boardgameDto.getDescription());
+        }
+
+        Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(newBoardgameDto);
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
+                logger.warn(cv.getMessage());
+                throw new IllegalArgumentException(
+                        cv.getMessage() + " - when trying to edit boardgame " + boardgameName);
             }
         }
 
-        if (flag == true) {
-            boardgameRepository.update(boardgame);
-        }
+        BeanUtils.copyProperties(boardgame, newBoardgameDto);
+        boardgameRepository.update(boardgame);
     }
 
     public String deleteBoardgame(String name) {
@@ -134,25 +158,24 @@ public class BoardgameService {
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                 "name", name);
         if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) { // Stampa l'errore
-                System.out.println(cv.getMessage());
+            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
+                logger.warn(cv.getMessage());
             }
-            return "Invalid input";
+            throw new IllegalArgumentException("Invalid name " + name);
         }
 
         Optional<List<OrderedBoardgames>> obQueryResult = orderedBoardgameRepository.findByBoardgameName(name);
         Optional<Boardgame> bQueryResult = boardgameRepository.findById(name);
 
-        if (obQueryResult.isPresent() && bQueryResult.isPresent()) {
-            List<OrderedBoardgames> list = obQueryResult.get();
-            for (OrderedBoardgames ob : list) {
-                orderedBoardgameRepository.delete(ob);
-            }
-
-            Boardgame boardgame = bQueryResult.get();
-            boardgameRepository.delete(boardgame);
+        if (obQueryResult.isEmpty() || bQueryResult.isEmpty()) {
+            logger.fatal("Illegal state, cannot find OrderedBoardgame or Boardgame Entity associated to Order");
+            throw new RuntimeException("Internal server error");
         }
 
+        for (OrderedBoardgames ob : obQueryResult.get()) {
+            orderedBoardgameRepository.delete(ob);
+        }
+        boardgameRepository.delete(bQueryResult.get());
         return "Successfully deleted " + name + " ";
 
     }

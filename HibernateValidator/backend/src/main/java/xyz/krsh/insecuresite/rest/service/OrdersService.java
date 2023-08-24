@@ -30,8 +30,13 @@ import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 @Service
 public class OrdersService {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     private static Validator validator = Validation.byDefaultProvider().configure()
             .messageInterpolator(new MyMessageInterpolator())
@@ -141,7 +146,7 @@ public class OrdersService {
 
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<OrderedBoardgameDto> cv : constraintViolations) {
-                System.out.println(cv.getMessage());
+                logger.warn(cv.getMessage());
             }
             return "Error: invalid input";
         }
@@ -217,7 +222,7 @@ public class OrdersService {
         } catch (ParseException e) {
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Exception: " + e);
+            logger.warn("Exception + e");
         }
 
         String email = this.getLoggedId(); // Get email from current session
