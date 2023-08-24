@@ -75,15 +75,12 @@ public class BoardgameController {
      * Return the Boardgame with newest values
      */
 
-    @GetMapping(value = "/{name}/edit")
-    @ResponseBody
-    public Boardgame ediBoardgame(@PathVariable String name,
-            @RequestParam(value = "price", required = false) Float price,
-            @RequestParam(value = "quantity", required = false) Integer quantity,
-            @RequestParam(value = "description", required = false) String description,
+    @RequestMapping(value = "/{name}/edit", method = RequestMethod.POST)
+    public ResponseEntity<String> ediBoardgame(@PathVariable String name, @RequestBody BoardgameDto boardgameDto,
             HttpServletRequest request) throws ItemNotFoundException, ConstraintViolationException {
 
-        return boardgameService.editBoardgame(name, price, quantity, description, request);
+        boardgameService.editBoardgame(name, boardgameDto);
+        return new ResponseEntity<String>(boardgameDto.toString(), HttpStatus.ACCEPTED);
     }
 
     /*
@@ -91,9 +88,9 @@ public class BoardgameController {
      * Return a success message
      * 
      */
-    @GetMapping("/{name}/delete")
-    public String deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
-        return boardgameService.deleteBoardgame(name);
+    @RequestMapping(value = "/{name}/delete", method = RequestMethod.POST)
+    public ResponseEntity<String> deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
+        return new ResponseEntity<String>(boardgameService.deleteBoardgame(name), HttpStatus.ACCEPTED);
     }
 
     /*

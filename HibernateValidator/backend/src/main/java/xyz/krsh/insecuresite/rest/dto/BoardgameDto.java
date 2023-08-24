@@ -12,12 +12,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class BoardgameDto {
 
     @NotNull
@@ -34,7 +36,7 @@ public class BoardgameDto {
 
     @Size(max = 1025)
     @NoHtml
-    @Pattern(regexp = "^[a-zA-Z0-9._%'\"+-<>,;:/()]+$", message = "Characters not allowed")
+    @Pattern(regexp = "^[a-zA-Z0-9 ._%'\"+-<>,;:/()]+$", message = "Characters not allowed")
     private String description;
 
 }

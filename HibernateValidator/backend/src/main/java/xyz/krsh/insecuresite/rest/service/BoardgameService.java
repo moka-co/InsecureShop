@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.xml.bind.ValidationException;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,50 +71,75 @@ public class BoardgameService {
 
     }
 
-    //TODO: make this method with BoardgameDto
-    public Boardgame editBoardgame(String name, Float price, Integer quantity, String description,
-            HttpServletRequest request)
+    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
             throws ItemNotFoundException {
         Boardgame boardgame;
+        boardgameDto.setName(boardgameName);
+        boolean flag = false;
 
-        List<Boardgame> queryResult = this.findByNameContaining(name);
+        List<Boardgame> queryResult = this.findByNameContaining(boardgameName);
         if (queryResult.size() == 0 || queryResult.isEmpty() == true) {
             throw new IndexOutOfBoundsException();
         } else {
             boardgame = queryResult.get(0);
         }
 
-        // Check existance of params
-        boolean priceParamExists = request.getParameterMap().containsKey("price");
-        boolean quantityParamExists = request.getParameterMap().containsKey("quantity");
-        boolean descriptionParamExists = request.getParameterMap().containsKey("description");
+        if (boardgameDto.getPrice() > 0.0) {
+            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
+                    "price", boardgameDto.getPrice());
+            if (constraintViolations.size() > 0) {
+                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
+                    System.out.println(cv.getMessage());
+                }
+            } else {
+                flag = true;
+                boardgame.setPrice(boardgameDto.getPrice());
+            }
 
-        // if price exists as parameter in the HTTP request, change the price
-        if (priceParamExists) {
-            boardgame.setPrice(price);
         }
-        if (quantityParamExists) {
-            boardgame.setQuantity(quantity);
-        }
-        if (descriptionParamExists) {
-            boardgame.setDescription(description);
-        }
+        if (boardgameDto.getQuantity() > 0) {
+            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
+                    "quantity", boardgameDto.getQuantity());
+            if (constraintViolations.size() > 0) {
+                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
+                    System.out.println(cv.getMessage());
+                }
+            } else {
+                flag = true;
+                boardgame.setQuantity(boardgameDto.getQuantity());
+            }
 
-        Set<ConstraintViolation<Boardgame>> constraintViolations = validator.validate(boardgame);
-        // if there are constraint violations
-
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<Boardgame> cv : constraintViolations) {
-                System.out.println(cv.getMessage());
+        }
+        if (boardgameDto.getDescription() != null && !boardgameDto.getDescription().equals("")) {
+            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
+                    "description", boardgameDto.getDescription());
+            if (constraintViolations.size() > 0) {
+                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
+                    System.out.println(cv.getMessage());
+                }
+            } else {
+                flag = true;
+                boardgame.setDescription(boardgameDto.getDescription());
             }
         }
 
-        boardgameRepository.update(boardgame);
-        return boardgame;
+        if (flag == true) {
+            boardgameRepository.update(boardgame);
+        }
     }
 
-    //Todo: Make this method with BoardgameDto
     public String deleteBoardgame(String name) {
+
+        // Validate input
+        Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
+                "name", name);
+        if (constraintViolations.size() > 0) {
+            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) { // Stampa l'errore
+                System.out.println(cv.getMessage());
+            }
+            return "Invalid input";
+        }
+
         Optional<List<OrderedBoardgames>> obQueryResult = orderedBoardgameRepository.findByBoardgameName(name);
         Optional<Boardgame> bQueryResult = boardgameRepository.findById(name);
 
