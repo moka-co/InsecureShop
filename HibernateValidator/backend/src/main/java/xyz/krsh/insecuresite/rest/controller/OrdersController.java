@@ -8,10 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +32,7 @@ public class OrdersController {
     @Autowired
     OrdersService ordersService;
 
-    @RequestMapping("/admin")
+    @GetMapping("/admin")
     public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
         return ordersService.findAllOrders();
     }
@@ -39,7 +40,7 @@ public class OrdersController {
     /*
      * Returns every order from the current logged User
      */
-    @RequestMapping("/")
+    @GetMapping("/")
     public List<OrderedBoardgames> findUserOrders() throws UnauthorizedException {
         return ordersService.findUserOrders();
     }
@@ -47,7 +48,7 @@ public class OrdersController {
     /*
      * Returns a specific order by id;
      */
-    @RequestMapping("/{orderId}/")
+    @GetMapping("/{orderId}/")
     public Order findOrder(@PathVariable("orderId") int orderId) throws ItemNotFoundException, UnauthorizedException {
         return ordersService.findOrder(orderId);
     }
@@ -55,7 +56,7 @@ public class OrdersController {
     /*
      * Return every ordered games with quantity
      */
-    @RequestMapping("/{orderId}/ob")
+    @GetMapping("/{orderId}/ob")
     public List<OrderedBoardgames> getAllOrderedBoardgamesFromUser(@PathVariable("orderId") int orderId)
             throws UnauthorizedException {
         return ordersService.getAllOrderedBoardgamesFromUser(orderId);
@@ -67,7 +68,7 @@ public class OrdersController {
      * Requires orderId, boardgame name and the quantity of boardgames to order
      * 
      */
-    @RequestMapping(value = "/{orderId}/addBoardgame", method = RequestMethod.POST)
+    @PostMapping("/{orderId}/addBoardgame")
     public ResponseEntity<String> addBoardgameToOrder(
             @PathVariable("orderId") int orderId, @RequestBody OrderedBoardgameDto obd,
             @RequestParam(value = "boardgameName") String boardgameName,
@@ -78,7 +79,7 @@ public class OrdersController {
 
     }
 
-    @RequestMapping(value = "/{orderId}/delete", method = RequestMethod.POST)
+    @PostMapping("/{orderId}/delete")
     public String deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
         return ordersService.deleteOrder(orderId);
@@ -88,7 +89,7 @@ public class OrdersController {
      * Add a new order to the database
      * Request parameters are: date
      */
-    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @PostMapping(value = "/add")
     public String addBoardgameReq(@RequestBody OrderDto orderDto) throws Exception {
 
         return ordersService.addOrder(orderDto.getOrderDate());

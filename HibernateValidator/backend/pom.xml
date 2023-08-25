@@ -98,6 +98,26 @@
       <version>2.20.0</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-webmvc-core -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-webmvc-core</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-common -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-common</artifactId>
+      <version>1.7.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>1.7.0</version>
+    </dependency>
 
 
 
