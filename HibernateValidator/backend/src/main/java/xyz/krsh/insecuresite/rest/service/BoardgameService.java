@@ -55,6 +55,7 @@ public class BoardgameService {
     public void addBoardgame(BoardgameDto boardgameDto)
             throws IllegalAccessException, InvocationTargetException {
 
+        logger.info("Begin validation in BoardgameService.addBoardgame()");
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(boardgameDto);
 
         if (constraintViolations.size() > 0) {
@@ -63,6 +64,7 @@ public class BoardgameService {
             }
             throw new ValidationException("Invalid input received when adding a boardgame");
         }
+        logger.info("Validation BoardgameService.addBoardgame() ended with success");
 
         Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
         BeanUtils.copyProperties(newBoardgame, boardgameDto);
@@ -70,64 +72,14 @@ public class BoardgameService {
 
     }
 
-    // TODO: first version of edit Boardgame()
-    public void editBoardgame2(String boardgameName, BoardgameDto boardgameDto)
-            throws ItemNotFoundException, IndexOutOfBoundsException {
-
-        // List<Boardgame> queryResult = findByNameContaining(boardgameName);
-        Boardgame boardgame = findByNameContaining(boardgameName).get(0);
-
-        if (boardgameDto.getPrice() > 0.0) {
-            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
-                    "price", boardgameDto.getPrice());
-            if (constraintViolations.size() > 0) {
-                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    logger.warn(cv.getMessage());
-                }
-                throw new IllegalArgumentException(
-                        "Invalid price value when trying to edit boardgame " + boardgameName);
-            }
-            boardgame.setPrice(boardgameDto.getPrice());
-        }
-
-        if (boardgameDto.getQuantity() != 0) {
-            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
-                    "quantity", boardgameDto.getQuantity());
-            if (constraintViolations.size() > 0) {
-                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    logger.warn(cv.getMessage());
-                }
-                throw new IllegalArgumentException(
-                        "Invalid quantity when trying to edit boardgame " + boardgameName);
-            }
-            boardgame.setQuantity(boardgameDto.getQuantity());
-
-        }
-        if (boardgameDto.getDescription() != null) {
-            Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
-                    "description", boardgameDto.getDescription());
-            if (constraintViolations.size() > 0) {
-                for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                    logger.warn(cv.getMessage());
-                }
-                throw new IllegalArgumentException(
-                        "Invalid description when trying to edit boardgame " + boardgameName);
-            }
-            boardgame.setDescription(boardgameDto.getDescription());
-        }
-
-        boardgameRepository.update(boardgame);
-    }
-
-    //TODO: another version of editBoardgame()
     public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
             throws ItemNotFoundException, IndexOutOfBoundsException, IllegalAccessException, InvocationTargetException {
 
-        // List<Boardgame> queryResult = findByNameContaining(boardgameName);
         Boardgame boardgame = findByNameContaining(boardgameName).get(0);
         BoardgameDto newBoardgameDto = new BoardgameDto();
         BeanUtils.copyProperties(newBoardgameDto, boardgame);
 
+        logger.info("Begin validation in BoardgameService.editBoardgame()");
         if (boardgameDto.getPrice() > 0.0) {
             newBoardgameDto.setPrice(boardgameDto.getPrice());
         }
@@ -140,20 +92,20 @@ public class BoardgameService {
         }
 
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(newBoardgameDto);
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                logger.warn(cv.getMessage());
-                throw new IllegalArgumentException(
-                        cv.getMessage() + " - when trying to edit boardgame " + boardgameName);
-            }
-        }
+        constraintViolations.stream().forEach(cv -> {
+            logger.warn(cv.getMessage());
+            throw new IllegalArgumentException(
+                    cv.getMessage() + " - when trying to edit boardgame " + boardgameName);
+        });
 
+        logger.info("Validation in BoardgameService.addBoardgame() ended with success");
         BeanUtils.copyProperties(boardgame, newBoardgameDto);
         boardgameRepository.update(boardgame);
     }
 
     public String deleteBoardgame(String name) {
 
+        logger.info("Begin validation in BoardgameService.deleteBoardgame()");
         // Validate input
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                 "name", name);
@@ -163,6 +115,8 @@ public class BoardgameService {
             }
             throw new IllegalArgumentException("Invalid name " + name);
         }
+
+        logger.info("Ended Validation in BoardgameService.deleteBoardgame() with success");
 
         Optional<List<OrderedBoardgames>> obQueryResult = orderedBoardgameRepository.findByBoardgameName(name);
         Optional<Boardgame> bQueryResult = boardgameRepository.findById(name);

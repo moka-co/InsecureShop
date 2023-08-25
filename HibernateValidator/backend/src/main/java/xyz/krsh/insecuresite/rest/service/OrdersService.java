@@ -73,7 +73,6 @@ public class OrdersService {
     /*
      * Check if current user has authority of admin
      */
-
     public boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -117,8 +116,10 @@ public class OrdersService {
 
         String loggedId = this.getLoggedId();
         String resultQueryUserId = resultQuery.get().getUser().getId();
+
         // Check if loggedId isn't equal to the id of the query
         if (!loggedId.equals(resultQueryUserId)) {
+            logger.error("Logged Id isn't equal to the id of query - unauthorized");
             throw new UnauthorizedException();
         }
 
@@ -142,6 +143,7 @@ public class OrdersService {
     public String addBoardgameToOrder(int orderId, OrderedBoardgameDto obd)
             throws UnauthorizedException {
 
+        logger.info("Begin Validation in OrdersService.addBoardgameToOrder()");
         Set<ConstraintViolation<OrderedBoardgameDto>> constraintViolations = validator.validate(obd);
 
         if (constraintViolations.size() > 0) {
@@ -150,6 +152,8 @@ public class OrdersService {
                 throw new IllegalArgumentException(cv.getMessage());
             }
         }
+
+        logger.info("Ended with success Validation in OrdersService.addBoardgameToOrder()");
 
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
         Optional<Boardgame> queryBoardgame = boardgameRepository.findById(obd.getName());
@@ -163,6 +167,7 @@ public class OrdersService {
         String email = this.getLoggedId();
         String compareEmail = queryOrder.get().getUser().getId();
         if (!compareEmail.equals(email)) {
+            logger.error("logged email is different from email from user - unauthorized");
             throw new UnauthorizedException();
         }
 
@@ -170,6 +175,7 @@ public class OrdersService {
 
         ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), obd.getQuantity());
         orderedBoardgamesRepository.save(ob);
+        logger.info("Saved new ordered boardgame" + ob.getId());
 
         return "Added successfully " + obd.getQuantity() + " of " + obd.getName() + " to Order id " + orderId;
 
@@ -218,10 +224,9 @@ public class OrdersService {
 
         String email = this.getLoggedId(); // Get email from current session
         Order toSave = new Order(userRepo.findById(email).get(), date); // make new order
-        toSave.setUser(userRepo.findById(email).get()); // Set User got from user repository
-        toSave.setOrderDate(date); // set date
         Order result = ordersRepository.save(toSave);
 
+        logger.info("Saved new Order to db with id " + result.getId());
         return "Added: " + result.getId();
 
     }

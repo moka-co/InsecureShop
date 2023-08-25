@@ -10,14 +10,20 @@ import xyz.krsh.insecuresite.rest.entities.User;
 import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+    protected static final Logger logger = LogManager.getLogger();
+
     @Autowired
-    private UserRepository userRepository; 
+    private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email)  //Load users from database with JPA Repository pattern
+    public UserDetails loadUserByUsername(String email) // Load users from database with JPA Repository pattern
             throws UsernameNotFoundException {
+        logger.info("New login detected: " + email);
         User user = userRepository.getUserByEmail(email); // Get user from the database
 
         if (user == null) {
