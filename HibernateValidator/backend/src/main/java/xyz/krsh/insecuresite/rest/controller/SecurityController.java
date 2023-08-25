@@ -6,33 +6,45 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+
 import org.springframework.web.bind.annotation.RestController;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @RestController
 public class SecurityController {
 
-    @RequestMapping(value = "/api/username", method = RequestMethod.GET)
+    /*
+     * Returns currently logged username (email)
+     */
+    @GetMapping(value = "/api/username")
     @ResponseBody
     public String currentUserName(Principal principal) {
-        return principal.toString();
+        return principal.getName();
 
     }
 
-    @RequestMapping(value = "/api/check_login", method = RequestMethod.GET)
+    /*
+     * Returns true if the user is logged in
+     */
+    @GetMapping(value = "/api/check_login")
     @ResponseBody
     public boolean checkAmILoggedIn(Principal principal) {
         return principal == null ? false : true;
     }
 
-    @RequestMapping(value = "/api/is_admin", method = RequestMethod.GET)
+    /*
+     * Returns true if logged user is admin
+     */
+    @GetMapping(value = "/api/is_admin")
     @ResponseBody
     public boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
 
         boolean isAdmin = authentication.isAuthenticated() && authentication.getAuthorities().stream()
                 .anyMatch(authority -> "admin".equals(authority.getAuthority()));

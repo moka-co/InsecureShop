@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.exceptions.UnauthorizedException;
 import xyz.krsh.insecuresite.rest.dto.OrderedBoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
@@ -109,10 +109,10 @@ public class OrdersService {
     /*
      * Returns a specific order find by using his id
      */
-    public Order findOrder(int orderId) throws ItemNotFoundException, UnauthorizedException {
+    public Order findOrder(int orderId) throws UnauthorizedException {
         Optional<Order> resultQuery = ordersRepository.findById(orderId);
         if (resultQuery.isEmpty() == true) {
-            throw new ItemNotFoundException();
+            throw new NoSuchElementException("Order with " + orderId + " not found ");
         }
 
         String loggedId = this.getLoggedId();
@@ -140,49 +140,46 @@ public class OrdersService {
      * Add boardgame to an order
      */
     public String addBoardgameToOrder(int orderId, OrderedBoardgameDto obd)
-            throws ItemNotFoundException, UnauthorizedException {
+            throws UnauthorizedException {
 
         Set<ConstraintViolation<OrderedBoardgameDto>> constraintViolations = validator.validate(obd);
 
         if (constraintViolations.size() > 0) {
             for (ConstraintViolation<OrderedBoardgameDto> cv : constraintViolations) {
                 logger.warn(cv.getMessage());
+                throw new IllegalArgumentException(cv.getMessage());
             }
-            return "Error: invalid input";
         }
 
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
         Optional<Boardgame> queryBoardgame = boardgameRepository.findById(obd.getName());
 
         OrderedBoardgames ob = null;
-
-        if (queryOrder.isPresent() && queryBoardgame.isPresent()) {
-
-            String email = this.getLoggedId();
-            String compareEmail = queryOrder.get().getUser().getId();
-
-            // Check if user email is the same from the order
-            if (!compareEmail.equals(email)) {
-                throw new UnauthorizedException();
-            }
-
-            OrderedBoardgamesId id = new OrderedBoardgamesId(orderId, obd.getName());
-
-            ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), obd.getQuantity());
-            orderedBoardgamesRepository.save(ob);
-        } else {
-            throw new ItemNotFoundException();
+        if (queryOrder.isEmpty() || queryBoardgame.isEmpty()) {
+            logger.warn("addBoardgameToOrder() method failed: queryOrder or queryBoardgame empty");
+            throw new NoSuchElementException("Boardgame or order not found, retry with another input");
         }
+
+        String email = this.getLoggedId();
+        String compareEmail = queryOrder.get().getUser().getId();
+        if (!compareEmail.equals(email)) {
+            throw new UnauthorizedException();
+        }
+
+        OrderedBoardgamesId id = new OrderedBoardgamesId(orderId, obd.getName());
+
+        ob = new OrderedBoardgames(id, queryOrder.get(), queryBoardgame.get(), obd.getQuantity());
+        orderedBoardgamesRepository.save(ob);
 
         return "Added successfully " + obd.getQuantity() + " of " + obd.getName() + " to Order id " + orderId;
 
     }
 
-    public String deleteOrder(int orderId) throws ItemNotFoundException, UnauthorizedException {
+    public String deleteOrder(int orderId) throws UnauthorizedException {
         Optional<Order> resultQuery = ordersRepository.findById(orderId);
 
         if (resultQuery.isEmpty()) {
-            throw new ItemNotFoundException();
+            throw new NoSuchElementException();
         }
 
         String email = this.getLoggedId();
@@ -214,19 +211,13 @@ public class OrdersService {
     }
 
     public String addOrder(String dateString)
-            throws UnauthorizedException {
+            throws UnauthorizedException, IllegalArgumentException, NullPointerException, ParseException {
         // Get Date info
         Date date = null;
-        try {
-            date = new SimpleDateFormat("dd-MM-yyyy").parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            logger.warn("Exception + e");
-        }
+        date = new SimpleDateFormat("dd-MM-yyyy").parse(dateString);
 
         String email = this.getLoggedId(); // Get email from current session
-        Order toSave = new Order(); // make new order
+        Order toSave = new Order(userRepo.findById(email).get(), date); // make new order
         toSave.setUser(userRepo.findById(email).get()); // Set User got from user repository
         toSave.setOrderDate(date); // set date
         Order result = ordersRepository.save(toSave);

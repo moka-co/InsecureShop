@@ -1,5 +1,6 @@
 package xyz.krsh.insecuresite.rest.controller;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import xyz.krsh.insecuresite.exceptions.ApiError;
@@ -49,7 +49,7 @@ public class OrdersController {
      * Returns a specific order by id;
      */
     @GetMapping("/{orderId}/")
-    public Order findOrder(@PathVariable("orderId") int orderId) throws ItemNotFoundException, UnauthorizedException {
+    public Order findOrder(@PathVariable("orderId") int orderId) throws UnauthorizedException {
         return ordersService.findOrder(orderId);
     }
 
@@ -70,19 +70,28 @@ public class OrdersController {
      */
     @PostMapping("/{orderId}/addBoardgame")
     public ResponseEntity<String> addBoardgameToOrder(
-            @PathVariable("orderId") int orderId, @RequestBody OrderedBoardgameDto obd,
-            @RequestParam(value = "boardgameName") String boardgameName,
-            @RequestParam(value = "quantity") Integer quantity)
-            throws ItemNotFoundException, UnauthorizedException {
-
-        return new ResponseEntity<String>(ordersService.addBoardgameToOrder(orderId, obd), HttpStatus.ACCEPTED);
+            @PathVariable("orderId") int orderId, @RequestBody OrderedBoardgameDto obd)
+            throws UnauthorizedException {
+        try {
+            return new ResponseEntity<String>(ordersService.addBoardgameToOrder(orderId, obd), HttpStatus.ACCEPTED);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
     }
 
     @PostMapping("/{orderId}/delete")
-    public String deleteOrder(@PathVariable("orderId") int orderId)
+    public ResponseEntity<String> deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
-        return ordersService.deleteOrder(orderId);
+        try {
+            return new ResponseEntity<String>(ordersService.deleteOrder(orderId), HttpStatus.OK);
+
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<String>("Order with id " + orderId + " not found ", HttpStatus.NOT_FOUND);
+        }
+
     }
 
     /*
@@ -90,9 +99,16 @@ public class OrdersController {
      * Request parameters are: date
      */
     @PostMapping(value = "/add")
-    public String addBoardgameReq(@RequestBody OrderDto orderDto) throws Exception {
+    public ResponseEntity<String> addBoardgameReq(@RequestBody OrderDto orderDto) throws UnauthorizedException {
 
-        return ordersService.addOrder(orderDto.getOrderDate());
+        try {
+            return new ResponseEntity<String>(ordersService.addOrder(orderDto.getOrderDate()), HttpStatus.OK);
+
+        } catch (IllegalArgumentException | NullPointerException | ParseException e) {
+            return new ResponseEntity<String>("Inserted date " + orderDto.getOrderDate() + " isn't correct ",
+                    HttpStatus.OK);
+        }
+
     }
 
     /*
@@ -117,7 +133,7 @@ public class OrdersController {
     // Not authorized
     @ExceptionHandler({ UnauthorizedException.class })
     public ApiError HandleUnauthorizedException() {
-        return new ApiError("Unauthorized", HttpStatus.BAD_REQUEST);
+        return new ApiError("Unauthorized", HttpStatus.UNAUTHORIZED);
 
     }
 
