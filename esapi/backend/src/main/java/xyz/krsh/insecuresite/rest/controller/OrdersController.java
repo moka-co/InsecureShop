@@ -1,25 +1,27 @@
 package xyz.krsh.insecuresite.rest.controller;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.exceptions.UnauthorizedException;
+import xyz.krsh.insecuresite.rest.dto.OrderDto;
+import xyz.krsh.insecuresite.rest.dto.OrderedBoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Order;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.service.OrdersService;
@@ -31,16 +33,11 @@ public class OrdersController {
     @Autowired
     OrdersService ordersService;
 
-
-    @RequestMapping("/admin")
-    public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
-        return ordersService.findAllOrders();
-    }
-
     /*
      * Returns every order from the current logged User
      */
-    @RequestMapping("/")
+    @ApiResponse(description = "Returns every order from the current logged user")
+    @GetMapping("/")
     public List<OrderedBoardgames> findUserOrders() throws UnauthorizedException {
         return ordersService.findUserOrders();
     }
@@ -48,7 +45,8 @@ public class OrdersController {
     /*
      * Returns a specific order by id;
      */
-    @RequestMapping("/{orderId}/")
+    @ApiResponse(description = "Return a specific order by id")
+    @GetMapping("/{orderId}/")
     public Order findOrder(@PathVariable("orderId") int orderId) throws ItemNotFoundException, UnauthorizedException {
         return ordersService.findOrder(orderId);
     }
@@ -56,7 +54,8 @@ public class OrdersController {
     /*
      * Return every ordered games with quantity
      */
-    @RequestMapping("/{orderId}/ob")
+    @ApiResponse(description = "Return every ordered boardgame and quantity from an order")
+    @GetMapping("/{orderId}/ob")
     public List<OrderedBoardgames> getAllOrderedBoardgamesFromUser(@PathVariable("orderId") int orderId)
             throws UnauthorizedException {
         return ordersService.getAllOrderedBoardgamesFromUser(orderId);
@@ -67,35 +66,50 @@ public class OrdersController {
      * Add boardgame to an order
      * Requires orderId, boardgame name and the quantity of boardgames to order
      */
-    @RequestMapping("/{orderId}/addBoardgame")
-    public OrderedBoardgames addBoardgameToOrder(
-            @PathVariable("orderId") int orderId,
-            @RequestParam(value = "boardgameName") String boardgameName,
-            @RequestParam(value = "quantity") Integer quantity)
-            throws ItemNotFoundException, UnauthorizedException {
-
-        return ordersService.addBoardgameToOrder(orderId, boardgameName, quantity);
+    @ApiResponse(description = "Add boardgame to an order")
+    @PostMapping("/{orderId}/addBoardgame")
+    public ResponseEntity<String> addBoardgameToOrder(
+            @PathVariable("orderId") int orderId, @RequestBody OrderedBoardgameDto obd)
+            throws UnauthorizedException {
+        try {
+            return new ResponseEntity<String>(ordersService.addBoardgameToOrder(orderId, obd), HttpStatus.ACCEPTED);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
     }
 
-    @RequestMapping("/{orderId}/delete")
-    public String deleteOrder(@PathVariable("orderId") int orderId)
+    @PostMapping("/{orderId}/delete")
+    @ApiResponse(description = "Delete specified order")
+    public ResponseEntity<String> deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
-        return ordersService.deleteOrder(orderId);
+        try {
+            return new ResponseEntity<String>(ordersService.deleteOrder(orderId), HttpStatus.OK);
+
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<String>("Order with id " + orderId + " not found ", HttpStatus.NOT_FOUND);
+        }
+
     }
 
     /*
      * Add a new order to the database
      * Request parameters are: date
      */
-    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-    @GetMapping("/add")
-    @ResponseBody
-    public Order addBoardgameReq(
-            @RequestParam("date") String dateString,
-            HttpServletRequest request) throws Exception {
+    @PostMapping(value = "/add")
+    @ApiResponse(description = "Add a new order to the database")
+    public ResponseEntity<String> addBoardgameReq(@RequestBody OrderDto orderDto) throws UnauthorizedException {
 
-        return ordersService.addOrder(dateString, request);
+        try {
+            return new ResponseEntity<String>(ordersService.addOrder(orderDto.getOrderDate()), HttpStatus.OK);
+
+        } catch (IllegalArgumentException | NullPointerException | ParseException e) {
+            return new ResponseEntity<String>("Inserted date " + orderDto.getOrderDate() + " isn't correct ",
+                    HttpStatus.OK);
+        }
+
     }
 
     /*

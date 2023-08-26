@@ -1,10 +1,10 @@
 package xyz.krsh.insecuresite.rest.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.codecs.MySQLCodec;
 import org.owasp.esapi.codecs.MySQLCodec.Mode;
@@ -12,14 +12,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import org.apache.commons.beanutils.BeanUtils;
+
 @Service
 public class BoardgameService {
-    MySQLCodec codec = new MySQLCodec(Mode.STANDARD);
+    protected static final Logger logger = LogManager.getLogger();
+
+    MySQLCodec codec = new MySQLCodec(Mode.STANDARD); // Codec for mysql encoding
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -53,6 +61,7 @@ public class BoardgameService {
         return boardgame;
     }
 
+    // Old
     public Boardgame addBoardgame(String name, float price, int quantity, String description) {
 
         // Example sql encoding
@@ -63,6 +72,24 @@ public class BoardgameService {
 
         boardgameRepository.save(newBoardgame);
         return newBoardgame;
+
+    }
+
+    /*
+     * New
+     */
+    public void addBoardgame(BoardgameDto boardgameDto)
+            throws IllegalAccessException, InvocationTargetException {
+
+        // Example sql encoding
+        String encodedDescr = ESAPI.encoder().canonicalize(boardgameDto.getDescription(), false, false);
+        encodedDescr = ESAPI.encoder().encodeForSQL(codec, encodedDescr);
+        boardgameDto.setDescription(encodedDescr);
+
+        Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
+        BeanUtils.copyProperties(newBoardgame, boardgameDto);
+        boardgameRepository.save(newBoardgame);
+        logger.info("Saved new boardgame: " + newBoardgame.getName());
 
     }
 
@@ -103,6 +130,32 @@ public class BoardgameService {
         return boardgame;
     }
 
+    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto)
+            throws ItemNotFoundException, IndexOutOfBoundsException, IllegalAccessException, InvocationTargetException {
+
+        Boardgame boardgame = findByNameContaining(boardgameName).get(0);
+        BoardgameDto newBoardgameDto = new BoardgameDto();
+        BeanUtils.copyProperties(newBoardgameDto, boardgame);
+
+        logger.info("Begin validation in BoardgameService.editBoardgame()");
+        if (boardgameDto.getPrice() > 0.0) {
+            newBoardgameDto.setPrice(boardgameDto.getPrice());
+        }
+
+        if (boardgameDto.getQuantity() != 0) {
+            newBoardgameDto.setQuantity(boardgameDto.getQuantity());
+        }
+        if (boardgameDto.getDescription() != null) {
+            String description = ESAPI.encoder().canonicalize(boardgameDto.getDescription());
+            description = ESAPI.encoder().encodeForSQL(codec, description);
+            newBoardgameDto.setDescription(boardgameDto.getDescription());
+        }
+
+        logger.info("Validation in BoardgameService.addBoardgame() ended with success");
+        BeanUtils.copyProperties(boardgame, newBoardgameDto);
+        boardgameRepository.update(boardgame);
+    }
+
     public String deleteBoardgame(String name) {
         Optional<List<OrderedBoardgames>> obQueryResult = orderedBoardgameRepository.findByBoardgameName(name);
         Optional<Boardgame> bQueryResult = boardgameRepository.findById(name);
@@ -115,6 +168,7 @@ public class BoardgameService {
 
             Boardgame boardgame = bQueryResult.get();
             boardgameRepository.delete(boardgame);
+            logger.info("Deleted boardgame " + boardgame.getName());
         }
 
         return "Successfully deleted " + name + " ";

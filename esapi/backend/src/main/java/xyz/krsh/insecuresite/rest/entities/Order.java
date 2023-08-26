@@ -23,6 +23,11 @@ public class Order {
     public Order() {
     }
 
+    public Order(User user, Date orderDate) {
+        this.user = user;
+        this.orderDate = orderDate;
+    }
+
     public int getId() {
         return orderId;
     }

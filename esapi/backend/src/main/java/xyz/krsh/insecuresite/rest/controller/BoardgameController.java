@@ -3,17 +3,22 @@ package xyz.krsh.insecuresite.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
@@ -22,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/boardgames")
+@Tag(name = "Boardgame Controller", description = "This controller is responsable for handling HTTP request related to boardgame management")
 public class BoardgameController {
 
     @Autowired
@@ -38,7 +44,7 @@ public class BoardgameController {
     }
 
     /*
-     * Get an existing boardgame querying using his name (primary key)
+     * Retrieve a boardgame by his name
      * Returns only the first result
      */
     @GetMapping("/{name}")
@@ -51,15 +57,16 @@ public class BoardgameController {
      * Add a new boardgame to the database by REST call
      * Request parameters are: name, price, quantity and description
      */
-    @GetMapping("/add")
-    @ResponseBody
-    public Boardgame addBoardgameReq(@RequestParam("name") String name,
-            @RequestParam("price") float price,
-            @RequestParam("quantity") int quantity,
-            @RequestParam("description") String description,
-            HttpServletRequest request) throws MissingServletRequestParameterException {
+    @PostMapping(value = "/add")
+    public ResponseEntity<String> addBoardgameReq(@RequestBody BoardgameDto boardgameDto) {
+        try {
+            boardgameService.addBoardgame(boardgameDto);
+            return new ResponseEntity<String>("Successfully added " + boardgameDto.getName(), HttpStatus.ACCEPTED);
 
-        return boardgameService.addBoardgame(name, price, quantity, description);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     /*
@@ -68,15 +75,18 @@ public class BoardgameController {
      * Return the Boardgame with newest values
      */
 
-    @GetMapping(value = "/{name}/edit")
-    @ResponseBody
-    public Boardgame ediBoardgame(@PathVariable String name,
-            @RequestParam(value = "price", required = false) Float price,
-            @RequestParam(value = "quantity", required = false) Integer quantity,
-            @RequestParam(value = "description", required = false) String description,
-            HttpServletRequest request) throws ItemNotFoundException {
+    @PostMapping(value = "/{name}/edit")
+    public ResponseEntity<String> ediBoardgame(@PathVariable String name, @RequestBody BoardgameDto boardgameDto,
+            HttpServletRequest request) {
 
-        return boardgameService.editBoardgame(name, price, quantity, description, request);
+        try {
+            boardgameService.editBoardgame(name, boardgameDto);
+            return new ResponseEntity<String>("Successfully edited boardgame " + name, HttpStatus.OK);
+        } catch (ItemNotFoundException | IndexOutOfBoundsException e2) {
+            return new ResponseEntity<String>("Boardgame " + name + " not found ", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /*
@@ -84,9 +94,18 @@ public class BoardgameController {
      * Return a success message
      * 
      */
-    @GetMapping("/{name}/delete")
-    public String deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
-        return boardgameService.deleteBoardgame(name);
+    @PostMapping(value = "/{name}/delete")
+    public ResponseEntity<String> deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
+        try {
+            return new ResponseEntity<String>(boardgameService.deleteBoardgame(name), HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     /*
