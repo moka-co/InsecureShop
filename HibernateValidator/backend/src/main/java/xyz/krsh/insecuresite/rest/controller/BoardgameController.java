@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
@@ -37,6 +38,7 @@ public class BoardgameController {
      */
     @GetMapping
     @ResponseBody
+    @ApiResponse(description = "Returns every boardgame that matches the query value")
     public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm)
             throws ItemNotFoundException {
         return boardgameService.findByNameContaining(queryTerm);
@@ -48,6 +50,7 @@ public class BoardgameController {
      */
     @GetMapping("/{name}")
     @ResponseBody
+    @ApiResponse(description = "Return a boardgame from the database querying by his primary key")
     public Boardgame getById(@PathVariable String name) throws ItemNotFoundException {
         return boardgameService.findByNameContaining(name).get(0);
     }
@@ -57,6 +60,7 @@ public class BoardgameController {
      * Request parameters are: name, price, quantity and description
      */
     @PostMapping(value = "/add")
+    @ApiResponse(description = "Add a new boardgame to the database")
     public ResponseEntity<String> addBoardgameReq(@RequestBody BoardgameDto boardgameDto) {
         try {
             boardgameService.addBoardgame(boardgameDto);
@@ -78,6 +82,7 @@ public class BoardgameController {
      */
 
     @PostMapping(value = "/{name}/edit")
+    @ApiResponse(description = "Edit an existing boardgame by specifying his name and optional parameters")
     public ResponseEntity<String> ediBoardgame(@PathVariable String name, @RequestBody BoardgameDto boardgameDto,
             HttpServletRequest request) {
 
@@ -98,6 +103,7 @@ public class BoardgameController {
      * Return a success message
      */
     @PostMapping(value = "/{name}/delete")
+    @ApiResponse(description = "Delete a boardgame by his name")
     public ResponseEntity<String> deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
         try {
             return new ResponseEntity<String>(boardgameService.deleteBoardgame(name), HttpStatus.OK);
