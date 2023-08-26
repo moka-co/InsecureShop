@@ -58,12 +58,12 @@ public class BoardgameService {
         logger.info("Begin validation in BoardgameService.addBoardgame()");
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(boardgameDto);
 
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                logger.warn(cv.getMessage());
-            }
+        constraintViolations.stream().forEach(cv -> {
+            logger.warn(cv.getMessage());
             throw new ValidationException("Invalid input received when adding a boardgame");
-        }
+
+        });
+
         logger.info("Validation BoardgameService.addBoardgame() ended with success");
 
         Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
@@ -109,12 +109,10 @@ public class BoardgameService {
         // Validate input
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validateValue(BoardgameDto.class,
                 "name", name);
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<BoardgameDto> cv : constraintViolations) {
-                logger.warn(cv.getMessage());
-            }
+        constraintViolations.stream().forEach(cv -> {
+            logger.warn(cv.getMessage());
             throw new IllegalArgumentException("Invalid name " + name);
-        }
+        });
 
         logger.info("Ended Validation in BoardgameService.deleteBoardgame() with success");
 

@@ -146,12 +146,11 @@ public class OrdersService {
         logger.info("Begin Validation in OrdersService.addBoardgameToOrder()");
         Set<ConstraintViolation<OrderedBoardgameDto>> constraintViolations = validator.validate(obd);
 
-        if (constraintViolations.size() > 0) {
-            for (ConstraintViolation<OrderedBoardgameDto> cv : constraintViolations) {
-                logger.warn(cv.getMessage());
-                throw new IllegalArgumentException(cv.getMessage());
-            }
-        }
+        constraintViolations.stream().forEach(cv -> {
+            logger.warn(cv.getMessage());
+            throw new IllegalArgumentException(cv.getMessage());
+
+        });
 
         logger.info("Ended with success Validation in OrdersService.addBoardgameToOrder()");
 

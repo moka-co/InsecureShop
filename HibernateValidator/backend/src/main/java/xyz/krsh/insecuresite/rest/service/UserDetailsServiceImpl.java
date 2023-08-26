@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) // Load users from database with JPA Repository pattern
             throws UsernameNotFoundException {
-        logger.info("New login detected: " + email);
+        logger.info("New login attempt detected: " + email);
         User user = userRepository.getUserByEmail(email); // Get user from the database
 
         if (user == null) {
