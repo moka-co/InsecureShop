@@ -16,10 +16,14 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
+
 @Configuration
 @ComponentScan
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "xyz.krsh.insecuresite")
+@OpenAPIDefinition(info = @Info(title = "Insecure shop", description = "A boardgame shop for testing input validation against XSS and SQL injection - made by Ciro Ogliastro", version = "v1"))
 public class InsecuresiteApplication {
 
 	public static void main(String[] args) {

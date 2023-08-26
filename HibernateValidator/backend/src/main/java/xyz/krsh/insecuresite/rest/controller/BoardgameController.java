@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
@@ -25,6 +26,7 @@ import javax.validation.ValidationException;
 
 @RestController
 @RequestMapping("/api/boardgames")
+@Tag(name = "Boardgame Controller", description = "This controller is responsable for handling HTTP request related to boardgame management")
 public class BoardgameController {
 
     @Autowired

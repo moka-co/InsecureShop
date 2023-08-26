@@ -9,16 +9,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @RestController
+@Tag(name = "Security Controller", description = "This controller is responsible for handling specific HTTP requests related to user authentication and authorization.")
 public class SecurityController {
 
     /*
      * Returns currently logged username (email)
      */
+    @ApiResponse(description = "Returns currently logged username")
     @GetMapping(value = "/api/username")
     @ResponseBody
     public String currentUserName(Principal principal) {
@@ -29,6 +34,7 @@ public class SecurityController {
     /*
      * Returns true if the user is logged in
      */
+    @ApiResponse(description = "Returns true if user is logged in")
     @GetMapping(value = "/api/check_login")
     @ResponseBody
     public boolean checkAmILoggedIn(Principal principal) {
@@ -38,6 +44,7 @@ public class SecurityController {
     /*
      * Returns true if logged user is admin
      */
+    @ApiResponse(description = "Returns true if logged user is admin")
     @GetMapping(value = "/api/is_admin")
     @ResponseBody
     public boolean isAdmin() {

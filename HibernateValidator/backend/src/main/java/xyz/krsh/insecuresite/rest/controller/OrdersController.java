@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import xyz.krsh.insecuresite.exceptions.ApiError;
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.exceptions.UnauthorizedException;
@@ -27,19 +29,28 @@ import xyz.krsh.insecuresite.rest.service.OrdersService;
 
 @RestController
 @RequestMapping("/api/orders")
+@Tag(name = "Order Controller", description = "This controller is responsible for handling specific HTTP Requests related to orders and ordered boardgames")
 public class OrdersController {
 
     @Autowired
     OrdersService ordersService;
 
-    @GetMapping("/admin")
-    public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
-        return ordersService.findAllOrders();
-    }
+    /*
+     * Admin only command that returns every order from every user
+     * 
+     * @GetMapping("/admin")
+     * 
+     * @ApiResponse(description =
+     * "Admin only request that returns every order from every user")
+     * public List<OrderedBoardgames> findAllOrders() throws UnauthorizedException {
+     * return ordersService.findAllOrders();
+     * }
+     */
 
     /*
      * Returns every order from the current logged User
      */
+    @ApiResponse(description = "Returns every order from the current logged user")
     @GetMapping("/")
     public List<OrderedBoardgames> findUserOrders() throws UnauthorizedException {
         return ordersService.findUserOrders();
@@ -48,6 +59,7 @@ public class OrdersController {
     /*
      * Returns a specific order by id;
      */
+    @ApiResponse(description = "Return a specific order by id")
     @GetMapping("/{orderId}/")
     public Order findOrder(@PathVariable("orderId") int orderId) throws UnauthorizedException {
         return ordersService.findOrder(orderId);
@@ -56,6 +68,7 @@ public class OrdersController {
     /*
      * Return every ordered games with quantity
      */
+    @ApiResponse(description = "Return every ordered boardgame and quantity from an order")
     @GetMapping("/{orderId}/ob")
     public List<OrderedBoardgames> getAllOrderedBoardgamesFromUser(@PathVariable("orderId") int orderId)
             throws UnauthorizedException {
@@ -68,6 +81,7 @@ public class OrdersController {
      * Requires orderId, boardgame name and the quantity of boardgames to order
      * 
      */
+    @ApiResponse(description = "Add boardgame to an order")
     @PostMapping("/{orderId}/addBoardgame")
     public ResponseEntity<String> addBoardgameToOrder(
             @PathVariable("orderId") int orderId, @RequestBody OrderedBoardgameDto obd)
@@ -83,6 +97,7 @@ public class OrdersController {
     }
 
     @PostMapping("/{orderId}/delete")
+    @ApiResponse(description = "Delete specified order")
     public ResponseEntity<String> deleteOrder(@PathVariable("orderId") int orderId)
             throws UnauthorizedException, ItemNotFoundException {
         try {
@@ -99,6 +114,7 @@ public class OrdersController {
      * Request parameters are: date
      */
     @PostMapping(value = "/add")
+    @ApiResponse(description = "Add a new order to the database")
     public ResponseEntity<String> addBoardgameReq(@RequestBody OrderDto orderDto) throws UnauthorizedException {
 
         try {
