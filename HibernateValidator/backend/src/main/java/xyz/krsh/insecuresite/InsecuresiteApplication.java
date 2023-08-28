@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 @ComponentScan
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "xyz.krsh.insecuresite")
+@EnableMongoRepositories
 @OpenAPIDefinition(info = @Info(title = "Insecure shop", description = "A boardgame shop for testing input validation against XSS and SQL injection - made by Ciro Ogliastro", version = "v1"))
 public class InsecuresiteApplication {
 
