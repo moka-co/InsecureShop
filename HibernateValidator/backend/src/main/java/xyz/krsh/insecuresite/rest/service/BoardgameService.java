@@ -19,6 +19,7 @@ import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.entities.OrderedBoardgames;
 import xyz.krsh.insecuresite.rest.repository.BoardgameRepository;
 import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
+import xyz.krsh.insecuresite.security.ESAPI.ESAPIValidatorWrapper;
 import xyz.krsh.insecuresite.security.HibernateValidator.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
 import org.apache.logging.log4j.Logger;
@@ -33,6 +34,9 @@ public class BoardgameService {
             .messageInterpolator(new MyMessageInterpolator())
             .buildValidatorFactory()
             .getValidator();
+
+    @Autowired
+    private static ESAPIValidatorWrapper ESAPIvalidator;
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -61,7 +65,6 @@ public class BoardgameService {
         constraintViolations.stream().forEach(cv -> {
             logger.warn(cv.getMessage());
             throw new ValidationException("Invalid input received when adding a boardgame");
-
         });
 
         logger.info("Validation BoardgameService.addBoardgame() ended with success");
@@ -89,8 +92,18 @@ public class BoardgameService {
         }
         if (boardgameDto.getDescription() != null) {
             newBoardgameDto.setDescription(boardgameDto.getDescription());
+            String descr = newBoardgameDto.getDescription();
+            String descriptionType = "Description";
+
+            // Validate with ESAPI
+            boolean result = ESAPIvalidator.getValidator().isValidInput("boardgame", descr, descriptionType, 1025,
+                    false, true);
+            if (result == false) {
+                logger.warn("Invalid input according to ESAPI Validator");
+            }
         }
 
+        // Validate with Hibernate
         Set<ConstraintViolation<BoardgameDto>> constraintViolations = validator.validate(newBoardgameDto);
         constraintViolations.stream().forEach(cv -> {
             logger.warn(cv.getMessage());
