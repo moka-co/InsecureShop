@@ -31,14 +31,13 @@ public class HibernateValidationAuthenticationForm {
 
             String username = formDataMap.get("username");
             Set<ConstraintViolation<User>> constraintViolations = instance.validateValue(User.class, "id", username);
+            constraintViolations.stream().forEach(cv -> {
+                logger.warn("Invalid input for class: " + cv.getRootBeanClass() + " - Invalid value "
+                        + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
+            });
             if (constraintViolations.size() > 0) {
-                for (ConstraintViolation<User> cv : constraintViolations) {
-                    logger.warn("Invalid input for class: " + cv.getRootBeanClass() + " - Invalid value "
-                            + cv.getInvalidValue() + " triggered error message: " + cv.getMessage());
-                }
                 return false;
             }
-
         }
         return true;
     }
