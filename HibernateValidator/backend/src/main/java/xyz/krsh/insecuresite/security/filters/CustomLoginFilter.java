@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import xyz.krsh.insecuresite.security.HibernateValidator.inputValidation.HibernateValidationAuthenticationForm;
+import xyz.krsh.insecuresite.security.ESAPI.inputValidation.ESAPIAuthenticationFormValidator;
 
 @Component
 public class CustomLoginFilter extends OncePerRequestFilter {
@@ -25,7 +25,10 @@ public class CustomLoginFilter extends OncePerRequestFilter {
          * If input is not valid, don't pass the response to the filterChain
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
-            HibernateValidationAuthenticationForm validator = new HibernateValidationAuthenticationForm();
+            // HibernateValidationAuthenticationForm validator = new
+            // HibernateValidationAuthenticationForm();
+            ESAPIAuthenticationFormValidator validator = new ESAPIAuthenticationFormValidator();
+            
             if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
                 filterChain.doFilter(request, response);
             } else {
