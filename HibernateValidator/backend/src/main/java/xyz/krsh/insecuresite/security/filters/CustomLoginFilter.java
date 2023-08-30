@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import xyz.krsh.insecuresite.security.inputValidation.HibernateValidationAuthenticationForm;
+import xyz.krsh.insecuresite.security.HibernateValidator.inputValidation.HibernateValidationAuthenticationForm;
 
 @Component
 public class CustomLoginFilter extends OncePerRequestFilter {

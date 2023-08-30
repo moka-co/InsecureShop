@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.security.customConstraints;
+package xyz.krsh.insecuresite.security.HibernateValidator.customConstraints;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

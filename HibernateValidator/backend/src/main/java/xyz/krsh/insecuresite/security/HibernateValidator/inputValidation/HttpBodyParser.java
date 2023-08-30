@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.security.inputValidation;
+package xyz.krsh.insecuresite.security.HibernateValidator.inputValidation;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -15,7 +15,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import xyz.krsh.insecuresite.security.customConstraints.NoHtml;
+import xyz.krsh.insecuresite.security.HibernateValidator.customConstraints.NoHtml;
 
 @Getter
 @Setter

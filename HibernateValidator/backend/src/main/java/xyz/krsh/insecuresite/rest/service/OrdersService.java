@@ -28,7 +28,7 @@ import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
 import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
-import xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping.MyMessageInterpolator;
+import xyz.krsh.insecuresite.security.HibernateValidator.hibernateValidatorBootstrapping.MyMessageInterpolator;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

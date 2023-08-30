@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.security.hibernateValidatorBootstrapping;
+package xyz.krsh.insecuresite.security.HibernateValidator.hibernateValidatorBootstrapping;
 
 import java.util.Locale;
 
