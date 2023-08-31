@@ -6,9 +6,9 @@ import org.owasp.esapi.Encoder;
 //Singleton encoder
 public class ESAPIEncoderWrapper {
 
-    private static Encoder encoder = ESAPI.encoder();
+    private Encoder encoder = ESAPI.encoder();
 
-    public static Encoder getEncoder() {
+    public Encoder getEncoder() {
         return encoder;
     }
 

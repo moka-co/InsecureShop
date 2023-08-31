@@ -24,8 +24,8 @@ import com.mysql.cj.xdevapi.Schema.Validation;
 
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
+import xyz.krsh.insecuresite.rest.service.documents.ESAPIValidatorService;
 import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
-import xyz.krsh.insecuresite.security.ESAPI.ESAPIValidatorWrapper;
 
 @DataMongoTest
 @ContextConfiguration(classes = InsecuresiteApplication.class)
@@ -33,7 +33,7 @@ public class EsapiInputValidationTest {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private ESAPIValidatorWrapper validatorWrapper = new ESAPIValidatorWrapper();
+    private ESAPIValidatorService validatorWrapper = new ESAPIValidatorService();
     private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
 
     @Autowired
@@ -51,7 +51,7 @@ public class EsapiInputValidationTest {
 
         Validator validator = validatorWrapper.getValidator();
         assertNotNull(validator);
-        Encoder encoder = ESAPIEncoderWrapper.getEncoder();
+        Encoder encoder = encoderWrapper.getEncoder();
         assertNotNull(encoder);
 
         logger.info("Initial test passed for encoder and validator wrapper");
@@ -74,7 +74,7 @@ public class EsapiInputValidationTest {
     // @Test
     public void testValidationRule() {
         Validator validator = validatorWrapper.getValidator();
-        StringValidationRule testRule = new StringValidationRule("Test Rule", ESAPIEncoderWrapper.getEncoder(),
+        StringValidationRule testRule = new StringValidationRule("Test Rule", encoderWrapper.getEncoder(),
                 "A-Z");
         validator.addRule(testRule);
 
@@ -84,28 +84,27 @@ public class EsapiInputValidationTest {
         logger.info("Validation Rule registrated with success");
     }
 
-    // @Test
+    @Test
     public void testStringValidationRule() {
-        ValidationRule testRule = new StringValidationRule("Test rule", encoderWrapper.getEncoder(), "[^A-Z]");
+        ValidationRule testRule = new StringValidationRule("Test rule", encoderWrapper.getEncoder(), "^[A-Z]{1,}$");
 
         String test = "ABCDefghi";
         boolean result = testRule.isValid("Validating " + test + " with testRule", test);
-        // Should match "ABCD[efghi]"
-        System.out.println("Result from first test is: " + result);
 
         String testTwo = "ABC";
         boolean resultTwo = testRule.isValid("Validating " + testTwo + " with testRule ", testTwo);
 
         assertFalse("Result should be false", result);
         assertTrue("Should be true", resultTwo);
-        logger.info("Correctly validated test string ABCDefghi with whiteliste A-Z");
+        logger.info(
+                "Correctly validated test string 'ABCDefghi' (=assertFalse) and 'ABC'(=assertTrue) with whitelist A-Z");
 
     }
 
     // @Test
     public void testMyCustomValidationRuleImplementation() {
         CustomValidationRule customRule = new CustomValidationRule("My custom rule", encoderWrapper.getEncoder(), false,
-                "A-Z");
+                "^[A-Z]{1,}$");
         String test = "ABCDefghi";
         boolean result = customRule.isValid("Validating " + test + " with customRule", test);
         assertFalse(result);

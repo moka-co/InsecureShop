@@ -3,6 +3,7 @@ package xyz.krsh.insecuresite;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.owasp.esapi.ESAPI;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -24,11 +25,13 @@ import io.swagger.v3.oas.annotations.info.Info;
 @ComponentScan
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "xyz.krsh.insecuresite")
-@EnableMongoRepositories
+@EnableMongoRepositories(basePackages = "xyz.krsh.insecuresite")
 @OpenAPIDefinition(info = @Info(title = "Insecure shop", description = "A boardgame shop for testing input validation against XSS and SQL injection - made by Ciro Ogliastro", version = "v1"))
 public class InsecuresiteApplication {
 
 	public static void main(String[] args) {
+		// initialize ESAPI
+		ESAPI.validator();
 		SpringApplication.run(InsecuresiteApplication.class, args);
 	}
 

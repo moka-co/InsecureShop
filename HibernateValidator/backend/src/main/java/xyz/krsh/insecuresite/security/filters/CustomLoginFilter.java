@@ -25,10 +25,8 @@ public class CustomLoginFilter extends OncePerRequestFilter {
          * If input is not valid, don't pass the response to the filterChain
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
-            // HibernateValidationAuthenticationForm validator = new
-            // HibernateValidationAuthenticationForm();
             ESAPIAuthenticationFormValidator validator = new ESAPIAuthenticationFormValidator();
-            
+
             if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
                 filterChain.doFilter(request, response);
             } else {

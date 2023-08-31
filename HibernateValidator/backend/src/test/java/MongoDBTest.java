@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.bson.Document;
 import org.junit.Before;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -37,6 +38,7 @@ public class MongoDBTest {
     }
 
     // @Test
+    @Order(1)
     public void checkConnectionToMongoDB() {
         mongoCollection = mongoTemplate.getCollection("test");
         assertNotNull("Assert MongoTemplate not nulla", mongoTemplate);
