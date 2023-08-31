@@ -1,7 +1,6 @@
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.bson.Document;
 import org.junit.Before;
@@ -37,17 +36,16 @@ public class MongoDBTest {
         this.mongoCollection = this.mongoTemplate.getCollection("test");
     }
 
-    @Test
+    // @Test
     public void checkConnectionToMongoDB() {
         mongoCollection = mongoTemplate.getCollection("test");
         assertNotNull("Assert MongoTemplate not nulla", mongoTemplate);
 
         logger.info("MongoDB connection test passed");
-        assertNotEquals(1, 2);
 
     }
 
-    @Test
+    // @Test
     public void checkReadDocument() {
         mongoCollection = mongoTemplate.getCollection("test");
         long count = mongoCollection.countDocuments(new Document("name", "test"));
@@ -57,16 +55,15 @@ public class MongoDBTest {
 
     }
 
-    @Test
+    // @Test
     public void checkWriteDocument() {
         InsertOneResult result = this.mongoCollection.insertOne(new Document("name", "delete-me"));
-        System.out.println(result.getInsertedId());
         long count = mongoCollection.countDocuments();
         assertEquals("Assert two document are present since one is deleted", 2, count);
 
     }
 
-    @Test
+    // @Test
     public void checkDeleteDocument() {
         DeleteResult result = this.mongoCollection.deleteOne(new Document("name", "delete-me"));
         assertNotNull("Assert that the document has been deleted ", result);

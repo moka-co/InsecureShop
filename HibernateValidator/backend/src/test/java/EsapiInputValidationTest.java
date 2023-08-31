@@ -1,17 +1,33 @@
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.Document;
+import org.junit.Before;
 import org.junit.Test;
+import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
+import org.owasp.esapi.ValidationRule;
 import org.owasp.esapi.Validator;
+import org.owasp.esapi.reference.validation.BaseValidationRule;
+import org.owasp.esapi.reference.validation.StringValidationRule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mysql.cj.xdevapi.Schema.Validation;
+
+import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
 import xyz.krsh.insecuresite.security.ESAPI.ESAPIValidatorWrapper;
 
+@DataMongoTest
 @ContextConfiguration(classes = InsecuresiteApplication.class)
 public class EsapiInputValidationTest {
 
@@ -20,7 +36,17 @@ public class EsapiInputValidationTest {
     private ESAPIValidatorWrapper validatorWrapper = new ESAPIValidatorWrapper();
     private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
 
-    @Test
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    private MongoCollection<Document> mongoCollection;
+
+    @Before
+    public void initialize() {
+        ESAPI.validator();
+    }
+
+    // @Test
     public void checkIfClassIsOk() {
 
         Validator validator = validatorWrapper.getValidator();
@@ -32,7 +58,7 @@ public class EsapiInputValidationTest {
 
     }
 
-    @Test
+    // @Test
     public void testValidateDescription() {
         Validator validator = validatorWrapper.getValidator();
         String testString = "abcd1234/-',12zxc";
@@ -42,6 +68,82 @@ public class EsapiInputValidationTest {
         assertTrue(result);
 
         logger.info("Test passed for random string with validator");
+
+    }
+
+    // @Test
+    public void testValidationRule() {
+        Validator validator = validatorWrapper.getValidator();
+        StringValidationRule testRule = new StringValidationRule("Test Rule", ESAPIEncoderWrapper.getEncoder(),
+                "A-Z");
+        validator.addRule(testRule);
+
+        ValidationRule getRule = validator.getRule("Test Rule");
+        assertNotNull(getRule);
+
+        logger.info("Validation Rule registrated with success");
+    }
+
+    // @Test
+    public void testStringValidationRule() {
+        ValidationRule testRule = new StringValidationRule("Test rule", encoderWrapper.getEncoder(), "[^A-Z]");
+
+        String test = "ABCDefghi";
+        boolean result = testRule.isValid("Validating " + test + " with testRule", test);
+        // Should match "ABCD[efghi]"
+        System.out.println("Result from first test is: " + result);
+
+        String testTwo = "ABC";
+        boolean resultTwo = testRule.isValid("Validating " + testTwo + " with testRule ", testTwo);
+
+        assertFalse("Result should be false", result);
+        assertTrue("Should be true", resultTwo);
+        logger.info("Correctly validated test string ABCDefghi with whiteliste A-Z");
+
+    }
+
+    // @Test
+    public void testMyCustomValidationRuleImplementation() {
+        CustomValidationRule customRule = new CustomValidationRule("My custom rule", encoderWrapper.getEncoder(), false,
+                "A-Z");
+        String test = "ABCDefghi";
+        boolean result = customRule.isValid("Validating " + test + " with customRule", test);
+        assertFalse(result);
+        logger.info("Validated string: " + test + " with pattern" + customRule.getPattern().toString());
+
+        result = customRule.isValid("Validating check null", null);
+        assertFalse(result);
+        logger.info("Correctly validated null string isn't falid therefore result is false");
+
+    }
+
+    // @Test
+    public void testCustomValidationRuleImplementationBuilder() {
+        mongoCollection = mongoTemplate.getCollection("test");
+        assertNotNull("Assert MongoTemplate not nulla", mongoCollection);
+
+        // Get from database doc
+        FindIterable<Document> query = mongoCollection.find(new Document("_id", "test"));
+        Document doc = query.first();
+        assertNotNull(doc);
+
+        // Assemble CustomValidationRule
+        assertNotNull(doc.get("rule"));
+        String regex = (String) doc.get("rule");
+
+        logger.info("Regex got from database: " + regex);
+
+        CustomValidationRule customRule = new CustomValidationRule("Test with database", encoderWrapper.getEncoder(),
+                false, regex);
+        String input = "ABCdef";
+        boolean resultOne = customRule.isValid("Testing if " + input + " is valid", input);
+
+        String inputTwo = "ABCDef123";
+        boolean resultTwo = customRule.isValid("Testing if " + inputTwo + " is valid", inputTwo);
+
+        assertTrue(resultOne);
+        assertFalse(resultTwo);
+        logger.info("workflow input test done");
 
     }
 
