@@ -24,24 +24,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
 import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
-import xyz.krsh.insecuresite.rest.service.documents.ESAPIValidatorService;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
 @Component
 public class ValidateCookieFilter extends OncePerRequestFilter {
     protected static final Logger logger = LogManager.getLogger();
 
     @Autowired
-    private ValidationRuleRepository validationRuleRepository;
+    ESAPIValidatorService validator;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        if (validationRuleRepository == null) {
-            logger.error("Validation rule repo is null");
-            return;
-        }
 
-        StringValidationRule cookieRule = new ESAPIValidatorService().getCookieValidationRule(validationRuleRepository);
+        StringValidationRule cookieRule = validator.getCookieValidationRule();
 
         Cookie[] cookies = request.getCookies();
         Stream<Cookie> stream = Objects.nonNull(cookies) ? Arrays.stream(cookies) : Stream.empty();

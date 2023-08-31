@@ -24,7 +24,7 @@ import com.mysql.cj.xdevapi.Schema.Validation;
 
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
-import xyz.krsh.insecuresite.rest.service.documents.ESAPIValidatorService;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
 
 @DataMongoTest

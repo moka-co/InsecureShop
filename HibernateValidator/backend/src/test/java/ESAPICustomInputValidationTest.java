@@ -26,7 +26,7 @@ import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
 import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
-import xyz.krsh.insecuresite.rest.service.documents.ESAPIValidatorService;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
 
 @DataMongoTest
