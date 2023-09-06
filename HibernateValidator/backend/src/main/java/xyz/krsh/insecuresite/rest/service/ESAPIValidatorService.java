@@ -11,6 +11,7 @@ import org.owasp.esapi.reference.validation.StringValidationRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
 import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
 
@@ -43,6 +44,24 @@ public class ESAPIValidatorService {
         } catch (Exception e) {
             logger.error(e);
             return null;
+        }
+
+    }
+
+    /*
+     * TODO:
+     * - Retrieve boardgame validation document from MongoDB: the document must have
+     * validation rules for every camp
+     * - Validate rules against the BoardgameDto input
+     * - If input is bad, throw an exception.
+     */
+    public void validateBoardgame(BoardgameDto boardgame) {
+        try {
+            Optional<ValidationRuleDocument> result = testRepository.findById("boardgame");
+            ValidationRuleDocument doc = result.get();
+
+        } catch (Exception e) {
+            logger.error(e);
         }
 
     }
