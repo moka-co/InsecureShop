@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
 @RestController
@@ -18,8 +19,10 @@ public class ValidationRuleController {
     private ESAPIValidatorService validator;
 
     @GetMapping("/api/document/test/")
-    public StringValidationRule getStringValidationRule() {
-        return validator.getCookieValidationRule();
+    public boolean getStringValidationRule() {
+        BoardgameDto boardgameDto = new BoardgameDto("someValue", (float) 1.0, 2,
+                "some descriptionsome descriptionsome descriptionsome descriptionsome descriptionsome description");
+        return validator.validateBoardgame2(boardgameDto);
     }
 
 }

@@ -39,7 +39,7 @@ public class BoardgameDto {
     private int quantity;
 
     @Size(max = 1025)
-    @Pattern(regexp = "^[a-zA-Z0-9 ._%'\"+-<>,;:/()]+$", message = "Characters not allowed")
+    @Pattern(regexp = "^[a-zA-Z0-9 ._%'\"+-<>,;:/()]+$", message = "Invalid input, found characters not allowed")
     // @NoHtml(message = "HTML is not acceptable input")
     private String description;
 
