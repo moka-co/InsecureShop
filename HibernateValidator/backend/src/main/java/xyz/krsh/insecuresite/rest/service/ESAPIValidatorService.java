@@ -78,6 +78,10 @@ public class ESAPIValidatorService {
             MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
             Document document = mongoCollection.find(new Document("_id", documentKey)).first();
 
+            if ((boolean) document.get("enabled") == false) {
+                return true;
+            }
+
             Stream<Method> bordgameDtoMethods = Arrays.stream(BoardgameDto.class.getMethods())
                     .filter(method -> method.getName().startsWith("get")
                             && method.getReturnType() != java.lang.Class.class);
@@ -117,6 +121,11 @@ public class ESAPIValidatorService {
         }
 
         Document ruleDocument = (Document) document.get(fieldName);
+        if (!(boolean) ruleDocument.get("enabled")) {
+            return true;
+        }
+
+        logger.info("fieldName: " + fieldName + " -> " + ruleDocument.toString());
 
         int min = ruleDocument.get("min") != null ? (int) ruleDocument.get("min") : MIN_DEFAULT;
         int max = ruleDocument.get("max") != null ? (int) ruleDocument.get("max") : MAX_DEFAULT;
