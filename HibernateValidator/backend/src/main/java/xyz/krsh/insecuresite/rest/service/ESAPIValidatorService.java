@@ -12,14 +12,15 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
+import org.owasp.esapi.ValidationRule;
 import org.owasp.esapi.Validator;
+import org.owasp.esapi.errors.ValidationException;
 import org.owasp.esapi.reference.validation.NumberValidationRule;
 import org.owasp.esapi.reference.validation.StringValidationRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
@@ -39,7 +40,9 @@ public class ESAPIValidatorService {
     private Encoder encoder = ESAPI.encoder();
     private Validator validator = ESAPI.validator();
 
-    boolean valid = false;
+    static final int MIN_DEFAULT = 0;
+
+    static final int MAX_DEFAULT = 1024;
 
     public Validator getValidator() {
         return validator;
@@ -68,47 +71,34 @@ public class ESAPIValidatorService {
      * Retrieve boardgame validation document from MongoDB
      * and validate every single field against rules from database
      */
-    public boolean validateBoardgame(BoardgameDto boardgame) {
+    public boolean validateBoardgame(BoardgameDto boardgame, String documentKey) {
+        boolean valid = false;
         try {
             logger.info("Retrieving document from repository");
             MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
-            Document document = mongoCollection.find(new Document("_id", "boardgame")).first();
+            Document document = mongoCollection.find(new Document("_id", documentKey)).first();
 
-            // Check price
-            Document priceMinmax = (Document) document.get("price");
-            int min = (int) priceMinmax.get("min");
-            int max = (int) priceMinmax.get("max");
-            NumberValidationRule priceValidationRule = new NumberValidationRule("priceValidationRule", encoder, min,
-                    max);
-            if (priceValidationRule.isValid("validating boardgameDto price",
-                    String.valueOf(boardgame.getPrice())) == false) {
-                logger.warn("invalid price in " + boardgame.toString());
-                return false;
-            }
+            Stream<Method> bordgameDtoMethods = Arrays.stream(BoardgameDto.class.getMethods())
+                    .filter(method -> method.getName().startsWith("get")
+                            && method.getReturnType() != java.lang.Class.class);
 
-            // Check Quantity
-            Document quantityMinmax = (Document) document.get("quantity");
-            min = (int) quantityMinmax.get("min");
-            max = (int) quantityMinmax.get("max");
-            NumberValidationRule quantityValidationRule = new NumberValidationRule("quantityValidationRule", encoder,
-                    min,
-                    max);
-            if (quantityValidationRule.isValid("validating boardgameDto quantity",
-                    String.valueOf(boardgame.getQuantity())) == false) {
-                logger.warn("invalid quantity in " + boardgame.toString());
-                return false;
-            }
-
-            // Check description
-            String rule = (String) document.get("description");
-            StringValidationRule descriptionValidationRule = new StringValidationRule("descriptionValidationRule",
-                    encoder, rule);
-            descriptionValidationRule.setMaximumLength(1024);
-            if (descriptionValidationRule.isValid("validating boardgameDto quantity",
-                    boardgame.getDescription()) == false) {
-                logger.warn("invalid description in " + boardgame.toString());
-                return false;
-            }
+            bordgameDtoMethods.forEach(method -> {
+                String methodName = method.getName();
+                String field = methodName.substring(3, methodName.length()).toLowerCase();
+                try {
+                    Object value = method.invoke(boardgame);
+                    if (validateRule(document, field, method.invoke(boardgame)) == false) {
+                        throw new ValidationException(
+                                "Invalid input: please change " + field + " input value and retry ",
+                                "Invalid input: " + value + " is not a valid input for " + field);
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    logger.error(e);
+                    throw new RuntimeException("cannot access to value from method " + method);
+                } catch (ValidationException validationException) {
+                    logger.error(validationException.getMessage());
+                }
+            });
 
             return true;
 
@@ -119,83 +109,41 @@ public class ESAPIValidatorService {
 
     }
 
-    /*
-     * Retrieve boardgame validation document from MongoDB
-     * and validate every single field against rules from database
-     */
-    public boolean validateBoardgame2(BoardgameDto boardgame) {
-        this.valid = true;
+    public boolean validateRule(Document document, String fieldName, Object input) {
 
-        try {
-            logger.info("Retrieving document from repository");
-            MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
-            Document document = mongoCollection.find(new Document("_id", "boardgame")).first();
-
-            logger.info("Begin validation of " + boardgame.toString());
-            Stream<Method> boardgameMethod = Arrays.stream(BoardgameDto.class.getMethods())
-                    .filter(method -> method.getName().startsWith("get"));
-            boardgameMethod.forEach(method -> {
-                if (this.valid == false) { // valid is false, don't valid other methods
-                    return;
-                }
-                logger.info("Currently validating method: " + method + " return type: " + method.getReturnType());
-
-                if (method.getReturnType() == String.class) {
-                    logger.info("Validating: " + method.getName() + " from " + boardgame.getClass().getSimpleName());
-                    this.valid = valid && validateStringType(method, document, boardgame);
-
-                } else if (method.getReturnType() == float.class || method.getReturnType() == int.class) {
-                    logger.info("Validating: " + method.getName() + " from " + boardgame.getClass().getSimpleName());
-                    this.valid = valid && validateNumberType(method, document, boardgame);
-                }
-            });
-
-            return this.valid;
-
-        } catch (Exception e) {
-            logger.error(e);
-            return false;
+        if (document.containsKey(fieldName) == false) {
+            throw new RuntimeException(
+                    fieldName + " is not a document validation rule key, add it to the document");
         }
 
-    }
+        Document ruleDocument = (Document) document.get(fieldName);
 
-    public boolean validateStringType(Method method, Document document, Object input) {
+        int min = ruleDocument.get("min") != null ? (int) ruleDocument.get("min") : MIN_DEFAULT;
+        int max = ruleDocument.get("max") != null ? (int) ruleDocument.get("max") : MAX_DEFAULT;
 
-        // Set validation rules
-        String rule = (String) document.get("description");
-        StringValidationRule stringValidationRule = new StringValidationRule(
-                "descriptionValidationRule",
-                encoder, rule);
-        stringValidationRule.setMaximumLength(1024);
+        String typeName = input.getClass().getTypeName();
+        if (typeName.equals("String")) {
+            String rule = (String) ruleDocument.get("rule");
+            StringValidationRule stringValidationRule = new StringValidationRule(fieldName + "ValidationRule", encoder,
+                    rule);
+            stringValidationRule.setMaximumLength(max);
+            stringValidationRule.setMinimumLength(min);
+            if (stringValidationRule.isValid("Check if input " + input + "is valid", input.toString()) == false) {
+                logger.error("invalid input: " + input + " against rule " + ruleDocument.toString());
+                return false;
+            }
 
-        // Check input against rules
-        try {
-            String value = (String) method.invoke(input);
-            return stringValidationRule.isValid("Validating " + input.toString(), value);
-        } catch (Exception e) {
-            logger.error(e);
-            return false;
+        } else if (typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float")) {
+            NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
+                    min, max);
+            if (numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString()) == false) {
+                logger.error("invalid input: " + input + " against rule " + ruleDocument.toString());
+                return false;
+            }
         }
+
+        logger.info(input + "  is valid input for " + ruleDocument.toString());
+        return true;
+
     }
-
-    public boolean validateNumberType(Method method, Document document, Object input) {
-
-        // Set validation rules
-        Document priceMinmax = (Document) document.get("price");
-        int min = (int) priceMinmax.get("min");
-        int max = (int) priceMinmax.get("max");
-        NumberValidationRule numberValidationRule = new NumberValidationRule("numberValidationRule",
-                encoder, min, max);
-
-        // Check input against rules;
-        try {
-            String value = String.valueOf(method.invoke(input));
-            return numberValidationRule.isValid("Validating + " + input.toString(), value);
-
-        } catch (Exception e) {
-            logger.error(e);
-            return false;
-        }
-    }
-
 }

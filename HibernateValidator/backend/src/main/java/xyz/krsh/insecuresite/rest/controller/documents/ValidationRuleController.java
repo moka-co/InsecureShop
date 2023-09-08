@@ -22,7 +22,7 @@ public class ValidationRuleController {
     public boolean getStringValidationRule() {
         BoardgameDto boardgameDto = new BoardgameDto("someValue", (float) 1.0, 2,
                 "some descriptionsome descriptionsome descriptionsome descriptionsome descriptionsome description");
-        return validator.validateBoardgame2(boardgameDto);
+        return validator.validateBoardgame(boardgameDto, "boardgame_v2");
     }
 
 }

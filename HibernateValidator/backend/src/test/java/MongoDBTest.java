@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;

@@ -2,9 +2,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
@@ -12,7 +9,6 @@ import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.ValidationRule;
-import org.owasp.esapi.Validator;
 import org.owasp.esapi.reference.validation.IntegerValidationRule;
 import org.owasp.esapi.reference.validation.NumberValidationRule;
 import org.owasp.esapi.reference.validation.StringValidationRule;

@@ -11,7 +11,6 @@ import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.ValidationRule;
 import org.owasp.esapi.Validator;
-import org.owasp.esapi.reference.validation.BaseValidationRule;
 import org.owasp.esapi.reference.validation.StringValidationRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -20,8 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mysql.cj.xdevapi.Schema.Validation;
-
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
