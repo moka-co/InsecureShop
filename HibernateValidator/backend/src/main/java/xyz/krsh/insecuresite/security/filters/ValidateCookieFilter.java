@@ -32,19 +32,14 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        StringValidationRule cookieRule = validator.getCookieValidationRule();
+        String cookieDocumentId = "jsessionid_v2";
 
         Cookie[] cookies = request.getCookies();
-        Stream<Cookie> stream = Objects.nonNull(cookies) ? Arrays.stream(cookies) : Stream.empty();
-        stream.forEach(cookie -> {
-            if (!cookieRule.isValid("Validating JSESSIONID", cookie.getValue())) {
+        for (Cookie cookie : cookies) {
+            if (!validator.isValidCookie(cookieDocumentId, cookie.getValue())) {
                 return;
             }
-            if (cookie != null) {
-                logger.info("JSESSIONID: " + cookie.getValue() + " - valid");
-            }
-
-        });
+        }
 
         filterChain.doFilter(request, response);
     }

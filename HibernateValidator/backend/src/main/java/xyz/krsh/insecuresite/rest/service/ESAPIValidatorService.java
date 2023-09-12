@@ -1,6 +1,5 @@
 package xyz.krsh.insecuresite.rest.service;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -12,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
-import org.owasp.esapi.ValidationRule;
 import org.owasp.esapi.Validator;
 import org.owasp.esapi.errors.ValidationException;
 import org.owasp.esapi.reference.validation.NumberValidationRule;
@@ -67,12 +65,45 @@ public class ESAPIValidatorService {
 
     }
 
+    public boolean isValidCookie(String documentName, String input) {
+
+        try {
+            System.out.println("Cookie input: " + input);
+            MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
+            Document document = mongoCollection.find(new Document("_id", "jsessionid_v2")).first();
+
+            if (document == null) {
+                throw new NullPointerException("Document with name \"jsessionid_v2\" not found");
+            }
+
+            if ((boolean) document.get("enabled") == false) {
+                return true;
+            }
+
+            String typename = "CookieValidationRule";
+            String whitelist = (String) document.get("whitelist");
+
+            if (whitelist == null) {
+                throw new ValidationException("Internal server error",
+                        "Invalid document type, whitelist for cookie not found");
+            }
+
+            StringValidationRule cookieValidationRule = new StringValidationRule(typename, encoder, whitelist);
+            return cookieValidationRule.isValid("Validating  " + input + " cookie", input);
+        } catch (Exception e) {
+            logger.error(e);
+            return false;
+        }
+    }
+
     /*
-     * Retrieve boardgame validation document from MongoDB
-     * and validate every single field against rules from database
+     * Input:
+     * - bean - the object to validate
+     * - documentKey - the key of the document containing the validation rules
+     * Output:
+     * - true if bean is valid, else false or throw exceptions
      */
-    public boolean validateBoardgame(BoardgameDto boardgame, String documentKey) {
-        boolean valid = false;
+    public boolean validateBean(Object bean, String documentKey) {
         try {
             logger.info("Retrieving document from repository");
             MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
@@ -90,8 +121,8 @@ public class ESAPIValidatorService {
                 String methodName = method.getName();
                 String field = methodName.substring(3, methodName.length()).toLowerCase();
                 try {
-                    Object value = method.invoke(boardgame);
-                    if (validateRule(document, field, method.invoke(boardgame)) == false) {
+                    Object value = method.invoke(bean);
+                    if (validateRule(document, field, method.invoke(bean)) == false) {
                         throw new ValidationException(
                                 "Invalid input: please change " + field + " input value and retry ",
                                 "Invalid input: " + value + " is not a valid input for " + field);
@@ -137,18 +168,12 @@ public class ESAPIValidatorService {
                     rule);
             stringValidationRule.setMaximumLength(max);
             stringValidationRule.setMinimumLength(min);
-            if (stringValidationRule.isValid("Check if input " + input + "is valid", input.toString()) == false) {
-                logger.error("invalid input: " + input + " against rule " + ruleDocument.toString());
-                return false;
-            }
+            return stringValidationRule.isValid("Check if input " + input + "is valid", input.toString());
 
         } else if (typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float")) {
             NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
                     min, max);
-            if (numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString()) == false) {
-                logger.error("invalid input: " + input + " against rule " + ruleDocument.toString());
-                return false;
-            }
+            return numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString());
         }
 
         logger.info(input + "  is valid input for " + ruleDocument.toString());
