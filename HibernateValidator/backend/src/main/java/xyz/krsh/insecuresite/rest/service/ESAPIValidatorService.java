@@ -46,25 +46,6 @@ public class ESAPIValidatorService {
         return validator;
     }
 
-    public StringValidationRule getCookieValidationRule() {
-        if (testRepository == null) {
-            logger.warn("Test repository null");
-        }
-
-        try {
-            Optional<ValidationRuleDocument> result = testRepository.findById("jsessionid");
-            ValidationRuleDocument doc = result.get();
-            String typename = "CookieValidationRule";
-            String whitelist = doc.getRule(); // "^[A-Za-z0-9-_]{10,50}$";
-            return new StringValidationRule(typename, encoder, whitelist);
-
-        } catch (Exception e) {
-            logger.error(e);
-            return null;
-        }
-
-    }
-
     public boolean isValidCookie(String documentName, String input) {
 
         try {
