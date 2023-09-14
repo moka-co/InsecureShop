@@ -6,7 +6,10 @@
         </Console>
         <File name="File" fileName="src\main\resources\logs\insecuresite.log">
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} [%t] %-5level %logger{36} - %msg%n "/>
-            </File>
+        </File>
+        <File name="File2" fileName="src\main\resources\logs\fileTwo.log">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} [%t] %-5level - %msg%n "/>
+        </File>
     </Appenders>
 
     <Loggers>
@@ -14,5 +17,8 @@
             <AppenderRef ref="console" />
             <AppenderRef ref="File"/>
         </Root>
+        <Logger name="File2" level="debug" >
+            <AppenderRef ref="File2"/>
+        </Logger>
     </Loggers>
 </Configuration>

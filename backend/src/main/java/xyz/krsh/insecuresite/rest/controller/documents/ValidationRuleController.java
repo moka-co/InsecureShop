@@ -12,16 +12,17 @@ import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 @RestController
 public class ValidationRuleController {
 
-    protected static final Logger logger = LogManager.getLogger(ValidationRuleController.class);
+    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger loggerTwo = LogManager.getLogger("File2");
 
     @Autowired
     private ESAPIValidatorService validator;
 
     @GetMapping("/api/document/test/")
     public boolean getStringValidationRule() {
-        logger.info("This is a test");
-        logger.warn("This is a warn");
-        logger.error("This is an error!");
+        logger.info("To file 1");
+        loggerTwo.info("To file 2");
+
         BoardgameDto boardgameDto = new BoardgameDto("someValue", (float) 1.0, 2,
                 "some descriptionsome descriptionsome descriptionsome descriptionsome descriptionsome description");
         return validator.validateBean(boardgameDto, "boardgame_v2");
