@@ -22,7 +22,6 @@ import com.mongodb.client.MongoCollection;
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
-import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
 
 @DataMongoTest
 @ContextConfiguration(classes = InsecuresiteApplication.class)
@@ -31,7 +30,7 @@ public class EsapiInputValidationTest {
     private static final Logger logger = LogManager.getLogger();
 
     private ESAPIValidatorService validatorWrapper = new ESAPIValidatorService();
-    private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
+    private Encoder encoder = ESAPI.encoder();
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -48,7 +47,6 @@ public class EsapiInputValidationTest {
 
         Validator validator = validatorWrapper.getValidator();
         assertNotNull(validator);
-        Encoder encoder = encoderWrapper.getEncoder();
         assertNotNull(encoder);
 
         logger.info("Initial test passed for encoder and validator wrapper");
@@ -71,7 +69,7 @@ public class EsapiInputValidationTest {
     // @Test
     public void testValidationRule() {
         Validator validator = validatorWrapper.getValidator();
-        StringValidationRule testRule = new StringValidationRule("Test Rule", encoderWrapper.getEncoder(),
+        StringValidationRule testRule = new StringValidationRule("Test Rule", encoder,
                 "A-Z");
         validator.addRule(testRule);
 
@@ -83,7 +81,7 @@ public class EsapiInputValidationTest {
 
     @Test
     public void testStringValidationRule() {
-        ValidationRule testRule = new StringValidationRule("Test rule", encoderWrapper.getEncoder(), "^[A-Z]{1,}$");
+        ValidationRule testRule = new StringValidationRule("Test rule", encoder, "^[A-Z]{1,}$");
 
         String test = "ABCDefghi";
         boolean result = testRule.isValid("Validating " + test + " with testRule", test);
@@ -100,7 +98,7 @@ public class EsapiInputValidationTest {
 
     // @Test
     public void testMyCustomValidationRuleImplementation() {
-        CustomValidationRule customRule = new CustomValidationRule("My custom rule", encoderWrapper.getEncoder(), false,
+        CustomValidationRule customRule = new CustomValidationRule("My custom rule", encoder, false,
                 "^[A-Z]{1,}$");
         String test = "ABCDefghi";
         boolean result = customRule.isValid("Validating " + test + " with customRule", test);
@@ -129,7 +127,7 @@ public class EsapiInputValidationTest {
 
         logger.info("Regex got from database: " + regex);
 
-        CustomValidationRule customRule = new CustomValidationRule("Test with database", encoderWrapper.getEncoder(),
+        CustomValidationRule customRule = new CustomValidationRule("Test with database", encoder,
                 false, regex);
         String input = "ABCdef";
         boolean resultOne = customRule.isValid("Testing if " + input + " is valid", input);

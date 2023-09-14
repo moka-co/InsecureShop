@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.errors.ValidationException;
 import org.owasp.esapi.reference.validation.BaseValidationRule;
 
 public class CustomValidationRule extends BaseValidationRule {
-    private static final Logger logger = LogManager.getLogger();
 
     protected List<Pattern> whitelistPatterns = new ArrayList<Pattern>();
     protected int maxLength = Integer.MAX_VALUE;
@@ -60,9 +57,9 @@ public class CustomValidationRule extends BaseValidationRule {
         if (allowNull == true && input == null) {
             return false;
         }
-        String canonicalizedInput = encoder.canonicalize(input);
+
         for (Pattern p : whitelistPatterns) {
-            if (!p.matcher(input).matches()) {
+            if (!p.matcher(encoder.canonicalize(input)).matches()) {
                 System.out.println(p);
                 return false;
             }

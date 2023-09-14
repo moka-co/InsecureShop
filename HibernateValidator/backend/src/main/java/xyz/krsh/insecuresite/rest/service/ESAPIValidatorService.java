@@ -3,7 +3,6 @@ package xyz.krsh.insecuresite.rest.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,8 +21,6 @@ import org.springframework.stereotype.Service;
 import com.mongodb.client.MongoCollection;
 
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
-import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
-import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
 
 @Service
 public class ESAPIValidatorService {
@@ -31,9 +28,6 @@ public class ESAPIValidatorService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private ValidationRuleRepository testRepository;
 
     private Encoder encoder = ESAPI.encoder();
     private Validator validator = ESAPI.validator();

@@ -9,12 +9,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import xyz.krsh.insecuresite.rest.entities.User;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
 public class MyUserDetails implements UserDetails {
+
+    @Autowired
+    ESAPIValidatorService validator;
 
     private User user;
 
     public MyUserDetails(User user) {
+        // TODO add user document validation to mongodb
+        // validator.validateBean(user, "user");
         this.user = user;
     }
 

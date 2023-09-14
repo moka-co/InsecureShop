@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
+import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.ValidationRule;
 import org.owasp.esapi.reference.validation.IntegerValidationRule;
@@ -24,8 +25,6 @@ import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
 import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
-import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
-import xyz.krsh.insecuresite.security.ESAPI.ESAPIEncoderWrapper;
 
 @DataMongoTest
 @ContextConfiguration(classes = InsecuresiteApplication.class)
@@ -33,8 +32,8 @@ public class ESAPICustomInputValidationTest {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private ESAPIValidatorService validatorWrapper = new ESAPIValidatorService();
-    private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
+    private Encoder encoder = ESAPI.encoder();
+    // private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -70,7 +69,7 @@ public class ESAPICustomInputValidationTest {
         assertFalse("Must be false or regex is wrong", testRegex);
 
         // Initialize CustomValidationRule and test two simple cases
-        CustomValidationRule customRule = new CustomValidationRule("Test with database", encoderWrapper.getEncoder(),
+        CustomValidationRule customRule = new CustomValidationRule("Test with database", encoder,
                 false, regex);
         String input = "ABCdef";
         boolean resultOne = customRule.isValid(input);
@@ -91,7 +90,6 @@ public class ESAPICustomInputValidationTest {
         assertNotNull(doc);
 
         String typename = "Quantity Validation";
-        Encoder encoder = encoderWrapper.getEncoder();
         int min = (int) doc.get("min");
         int max = (int) doc.get("max");
 
@@ -132,7 +130,7 @@ public class ESAPICustomInputValidationTest {
 
         // Initialize CustomValidationRule and test two simple cases
         StringValidationRule stringRule = new StringValidationRule("Boardgame Description Validation",
-                encoderWrapper.getEncoder(), description);
+                encoder, description);
         String input = "ABCdef";
         boolean resultOne = stringRule.isValid("Testing description input 1", input);
 
@@ -148,7 +146,7 @@ public class ESAPICustomInputValidationTest {
         int qMax = (int) doc2.get("max");
 
         int quantity = 12;
-        NumberValidationRule quantityRule = new NumberValidationRule(inputTwo, encoderWrapper.getEncoder(), qMin, qMax);
+        NumberValidationRule quantityRule = new NumberValidationRule(inputTwo, encoder, qMin, qMax);
 
         assertTrue(quantityRule.isValid("Quantity 1 test valid", String.valueOf(quantity)));
 

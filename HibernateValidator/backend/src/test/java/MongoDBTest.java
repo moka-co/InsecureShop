@@ -12,8 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.InsertOneResult;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -58,7 +56,7 @@ public class MongoDBTest {
 
     // @Test
     public void checkWriteDocument() {
-        InsertOneResult result = this.mongoCollection.insertOne(new Document("name", "delete-me"));
+        this.mongoCollection.insertOne(new Document("name", "delete-me"));
         long count = mongoCollection.countDocuments();
         assertEquals("Assert two document are present since one is deleted", 2, count);
 
