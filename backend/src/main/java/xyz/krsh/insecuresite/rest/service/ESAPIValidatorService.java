@@ -3,6 +3,8 @@ package xyz.krsh.insecuresite.rest.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -88,38 +90,82 @@ public class ESAPIValidatorService {
                 return true;
             }
 
-            Stream<Method> bordgameDtoMethods = Arrays.stream(BoardgameDto.class.getMethods())
+            Stream<Method> inputMethods = Arrays.stream(bean.getClass().getMethods())
                     .filter(method -> method.getName().startsWith("get")
                             && method.getReturnType() != java.lang.Class.class);
-
-            bordgameDtoMethods.forEach(method -> {
-                String methodName = method.getName();
-                String field = methodName.substring(3, methodName.length()).toLowerCase();
+            List<Method> listOfMethods = inputMethods.collect(Collectors.toList());
+            for (Method method : listOfMethods) {
+                String field = method.getName().substring(3, method.getName().length()).toLowerCase();
                 try {
-                    Object value = method.invoke(bean);
-                    if (validateRule(document, field, method.invoke(bean)) == false) {
-                        throw new ValidationException(
-                                "Invalid input: please change " + field + " input value and retry ",
-                                "Invalid input: " + value + " is not a valid input for " + field);
-                    }
+                    validateRule(document, field, method.invoke(bean));
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    logger.error(e);
-                    throw new RuntimeException("cannot access to value from method " + method);
-                } catch (ValidationException validationException) {
-                    logger.error(validationException.getMessage());
+                    e.printStackTrace();
                 }
-            });
 
-            return true;
+            }
 
-        } catch (Exception e) {
-            logger.error(e);
+            /*
+             * bordgameDtoMethods.forEach(method -> {
+             * String methodName = method.getName();
+             * String field = methodName.substring(3, methodName.length()).toLowerCase();
+             * try {
+             * Object value = method.invoke(bean);
+             * validateRule(document, field, method.invoke(bean));
+             * } catch (IllegalAccessException | IllegalArgumentException |
+             * InvocationTargetException e) {
+             * logger.info(e);
+             * throw new RuntimeException("cannot access to value from method " + method);
+             * } catch (ValidationException e) {
+             * }
+             * });
+             */
+
+        } catch (ValidationException e) {
+            logger.info(e);
             return false;
         }
 
+        return true;
     }
 
-    public boolean validateRule(Document document, String fieldName, Object input) {
+    public boolean validateBean2(Object bean, String documentKey) throws ValidationException {
+        logger.info("Retrieving document from repository");
+        MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
+        Document document = mongoCollection.find(new Document("_id", documentKey)).first();
+
+        if (document == null) {
+            throw new NullPointerException("Document not found");
+        }
+
+        if ((boolean) document.get("enabled") == false) {
+            logger.info(documentKey + " is disabled!");
+            return true;
+        }
+
+        Stream<Method> inputMethods = Arrays.stream(bean.getClass().getMethods())
+                .filter(method -> method.getName().startsWith("get")
+                        && method.getReturnType() != java.lang.Class.class);
+        List<Method> listOfMethods = inputMethods.collect(Collectors.toList());
+
+        for (Method method : listOfMethods) {
+            String field = method.getName().substring(3, method.getName().length()).toLowerCase();
+            try {
+                Object value = method.invoke(bean);
+                boolean result = validateRule(document, field, value);
+                if (result == false) {
+                    throw new ValidationException(
+                            "Invalid input: please change " + field + " input value and retry ",
+                            "Invalid input: " + value + " is not a valid input for " + field);
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean validateRule(Document document, String fieldName, Object input) throws ValidationException {
+        boolean returnValue = false;
         logger.info("Entering validateRule method, validating " + fieldName + "with value " + input
                 + " against document " + (Document) document.get(fieldName));
 
@@ -145,17 +191,19 @@ public class ESAPIValidatorService {
             stringValidationRule.setMaximumLength(max);
             stringValidationRule.setMinimumLength(min);
 
-            return stringValidationRule.isValid("Check if input " + input + "is valid", input.toString());
+            returnValue = stringValidationRule.isValid("Check if input " + input + "is valid", input.toString());
 
         } else if (typeName.equals("java.lang.Integer")
                 || typeName.equals("java.lang.Float")) {
             NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
                     min, max);
-            return numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString());
+            returnValue = numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString());
         } else {
             logger.error("Unknown typename");
             return false;
         }
+
+        return returnValue;
 
     }
 }

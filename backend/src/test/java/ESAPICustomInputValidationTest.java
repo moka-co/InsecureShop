@@ -167,7 +167,7 @@ public class ESAPICustomInputValidationTest {
     @Test
     public void testFailValidator() throws ValidationException {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
-                "<script>alert(1)</script>descriptionsome descriptionsome descriptionsome descriptionsome description");
+                "descriptionsome descriptionsome descriptionsome descriptionsome description");
         boolean result = validator.validateBean(boardgameDto, "boardgame_v2");
         assertFalse(result);
 

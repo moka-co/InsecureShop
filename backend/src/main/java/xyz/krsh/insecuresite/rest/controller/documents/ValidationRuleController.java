@@ -22,11 +22,10 @@ public class ValidationRuleController {
     @GetMapping("/api/document/test/")
     public boolean getStringValidationRule() {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
-                "\\<script>alert(1)</script>descriptionsome descriptionsome descriptionsome descriptionsome description");
+                "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
-            return validator.validateBean(boardgameDto, "boardgame_v2");
-
-        } catch (ValidationException e) {
+            return validator.validateBean2(boardgameDto, "boardgame_v2");
+        } catch (Exception e) {
             loggerTwo.warn("Invalid bean: " + boardgameDto.toString());
             return false;
         }
