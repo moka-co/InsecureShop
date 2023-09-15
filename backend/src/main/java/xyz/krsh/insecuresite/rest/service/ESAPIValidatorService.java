@@ -77,13 +77,14 @@ public class ESAPIValidatorService {
      * Output:
      * - true if bean is valid, else false or throw exceptions
      */
-    public boolean validateBean(Object bean, String documentKey) {
+    public boolean validateBean(Object bean, String documentKey) throws ValidationException {
         try {
             logger.info("Retrieving document from repository");
             MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
             Document document = mongoCollection.find(new Document("_id", documentKey)).first();
 
             if ((boolean) document.get("enabled") == false) {
+                logger.info(documentKey + " is disabled!");
                 return true;
             }
 
@@ -119,6 +120,8 @@ public class ESAPIValidatorService {
     }
 
     public boolean validateRule(Document document, String fieldName, Object input) {
+        logger.info("Entering validateRule method, validating " + fieldName + "with value " + input
+                + " against document " + (Document) document.get(fieldName));
 
         if (document.containsKey(fieldName) == false) {
             throw new RuntimeException(
@@ -130,28 +133,29 @@ public class ESAPIValidatorService {
             return true;
         }
 
-        logger.info("fieldName: " + fieldName + " -> " + ruleDocument.toString());
-
         int min = ruleDocument.get("min") != null ? (int) ruleDocument.get("min") : MIN_DEFAULT;
         int max = ruleDocument.get("max") != null ? (int) ruleDocument.get("max") : MAX_DEFAULT;
 
         String typeName = input.getClass().getTypeName();
-        if (typeName.equals("String")) {
+
+        if (typeName.equals("java.lang.String")) {
             String rule = (String) ruleDocument.get("rule");
             StringValidationRule stringValidationRule = new StringValidationRule(fieldName + "ValidationRule", encoder,
                     rule);
             stringValidationRule.setMaximumLength(max);
             stringValidationRule.setMinimumLength(min);
+
             return stringValidationRule.isValid("Check if input " + input + "is valid", input.toString());
 
-        } else if (typeName.toLowerCase().equals("integer") || typeName.toLowerCase().equals("float")) {
+        } else if (typeName.equals("java.lang.Integer")
+                || typeName.equals("java.lang.Float")) {
             NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
                     min, max);
             return numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString());
+        } else {
+            logger.error("Unknown typename");
+            return false;
         }
-
-        logger.info(input + "  is valid input for " + ruleDocument.toString());
-        return true;
 
     }
 }

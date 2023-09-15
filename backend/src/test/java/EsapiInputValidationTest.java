@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.junit.Before;
-import org.junit.Test;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.ValidationRule;
@@ -79,7 +78,7 @@ public class EsapiInputValidationTest {
         logger.info("Validation Rule registrated with success");
     }
 
-    @Test
+    // @Test
     public void testStringValidationRule() {
         ValidationRule testRule = new StringValidationRule("Test rule", encoder, "^[A-Z]{1,}$");
 

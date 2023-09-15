@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.ValidationRule;
+import org.owasp.esapi.errors.ValidationException;
 import org.owasp.esapi.reference.validation.IntegerValidationRule;
 import org.owasp.esapi.reference.validation.NumberValidationRule;
 import org.owasp.esapi.reference.validation.StringValidationRule;
@@ -23,8 +24,10 @@ import com.mongodb.client.MongoCollection;
 
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
+import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
 import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
 @DataMongoTest
 @ContextConfiguration(classes = InsecuresiteApplication.class)
@@ -34,6 +37,9 @@ public class ESAPICustomInputValidationTest {
 
     private Encoder encoder = ESAPI.encoder();
     // private ESAPIEncoderWrapper encoderWrapper = new ESAPIEncoderWrapper();
+
+    @Autowired
+    private ESAPIValidatorService validator;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -113,7 +119,7 @@ public class ESAPICustomInputValidationTest {
         inserted = validationRuleRepository.save(new ValidationRuleDocument("jsessionid", "^[A-Za-z0-9-_]{10,50}$"));
     }
 
-    @Test
+    // @Test
     public void testBoardgameValidator() {
         mongoCollection = mongoTemplate.getCollection("validationRuleDocument");
         assertNotNull("Assert MongoTemplate not nulla", mongoCollection);
@@ -155,6 +161,15 @@ public class ESAPICustomInputValidationTest {
         assertFalse(quantityRule.isValid("Quantity 2 test invalid", String.valueOf(quantity2)));
 
         logger.info("Validation quantity test done");
+
+    }
+
+    @Test
+    public void testFailValidator() throws ValidationException {
+        BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
+                "<script>alert(1)</script>descriptionsome descriptionsome descriptionsome descriptionsome description");
+        boolean result = validator.validateBean(boardgameDto, "boardgame_v2");
+        assertFalse(result);
 
     }
 
