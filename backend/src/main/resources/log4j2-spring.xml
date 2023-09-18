@@ -10,6 +10,9 @@
         <File name="File2" fileName="src\main\resources\logs\fileTwo.log">
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
         </File>
+        <File name="Splunk-log" fileName="src\main\resources\logs\splunk.log">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
+        </File>
     </Appenders>
 
     <Loggers>
@@ -19,6 +22,9 @@
         </Root>
         <Logger name="File2" level="debug" >
             <AppenderRef ref="File2"/>
+        </Logger>
+        <Logger name="Splunk" level="trace">
+            <AppenderRef ref="Splunk-Log"/>
         </Logger>
     </Loggers>
 </Configuration>

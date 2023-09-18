@@ -16,6 +16,7 @@ public class ValidationRuleController {
 
     protected static final Logger logger = LogManager.getLogger();
     protected static final Logger loggerTwo = LogManager.getLogger("File2");
+    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk");
 
     @Autowired
     private ESAPIValidatorService validator;
@@ -27,6 +28,21 @@ public class ValidationRuleController {
     public boolean getStringValidationRule() {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
+        try {
+            loggerTwo.info("ValidationRuleController - Called /api/document/test");
+            return validator.validateBean(boardgameDto, "boardgame_v2");
+        } catch (Exception e) {
+            loggerTwo.warn("ValidationRuleController - Invalid bean: " + boardgameDto.getName() + " - "
+                    + boardgameDto.toString());
+            return false;
+        }
+
+    }
+
+    @GetMapping("/api/document/test-fail/")
+    public boolean getStringValidationRuleFail() {
+        BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
+                "<script>alert(1)</script>descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
             loggerTwo.info("ValidationRuleController - Called /api/document/test");
             return validator.validateBean(boardgameDto, "boardgame_v2");

@@ -26,13 +26,14 @@ public class DocumentDefencesService {
             return;
         }
 
-        document.put("enabled", switchValue);
-
         Document update = new Document("$set", new Document("enabled", switchValue));
         mongoCollection.updateOne(Filters.eq("_id", documentName),
                 update);
 
-        loggerTwo.info("Called enableOrDisableDocument, operation: " + switchValue);
+        String logMessage = "Called enableOrDisableDocument, operation: ";
+        if (switchValue == false) {
+            logMessage = logMessage + "";
+        }
 
     }
 

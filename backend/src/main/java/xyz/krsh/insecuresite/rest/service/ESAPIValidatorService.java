@@ -22,8 +22,6 @@ import org.springframework.stereotype.Service;
 
 import com.mongodb.client.MongoCollection;
 
-import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
-
 @Service
 public class ESAPIValidatorService {
     protected static final Logger logger = LogManager.getLogger();
@@ -102,6 +100,9 @@ public class ESAPIValidatorService {
                             "Invalid input: " + value + " is not a valid input for " + field);
                 }
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                return false;
+            } catch (ValidationException e) {
+                logger.info(e.getMessage());
                 return false;
             }
         }

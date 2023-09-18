@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
-//@Component
+@Component
 public class ValidateCookieFilter extends OncePerRequestFilter {
     protected static final Logger logger = LogManager.getLogger();
 
@@ -27,6 +27,12 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+        if (requestURI.endsWith("/api/document/up/") || requestURI.endsWith("/api/document/down/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String cookieDocumentId = "jsessionid_v2";
 
