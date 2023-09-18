@@ -72,63 +72,7 @@ public class ESAPIValidatorService {
         }
     }
 
-    /*
-     * Input:
-     * - bean - the object to validate
-     * - documentKey - the key of the document containing the validation rules
-     * Output:
-     * - true if bean is valid, else false or throw exceptions
-     */
     public boolean validateBean(Object bean, String documentKey) throws ValidationException {
-        try {
-            logger.info("Retrieving document from repository");
-            MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
-            Document document = mongoCollection.find(new Document("_id", documentKey)).first();
-
-            if ((boolean) document.get("enabled") == false) {
-                logger.info(documentKey + " is disabled!");
-                return true;
-            }
-
-            Stream<Method> inputMethods = Arrays.stream(bean.getClass().getMethods())
-                    .filter(method -> method.getName().startsWith("get")
-                            && method.getReturnType() != java.lang.Class.class);
-            List<Method> listOfMethods = inputMethods.collect(Collectors.toList());
-            for (Method method : listOfMethods) {
-                String field = method.getName().substring(3, method.getName().length()).toLowerCase();
-                try {
-                    validateRule(document, field, method.invoke(bean));
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-            /*
-             * bordgameDtoMethods.forEach(method -> {
-             * String methodName = method.getName();
-             * String field = methodName.substring(3, methodName.length()).toLowerCase();
-             * try {
-             * Object value = method.invoke(bean);
-             * validateRule(document, field, method.invoke(bean));
-             * } catch (IllegalAccessException | IllegalArgumentException |
-             * InvocationTargetException e) {
-             * logger.info(e);
-             * throw new RuntimeException("cannot access to value from method " + method);
-             * } catch (ValidationException e) {
-             * }
-             * });
-             */
-
-        } catch (ValidationException e) {
-            logger.info(e);
-            return false;
-        }
-
-        return true;
-    }
-
-    public boolean validateBean2(Object bean, String documentKey) throws ValidationException {
         logger.info("Retrieving document from repository");
         MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
         Document document = mongoCollection.find(new Document("_id", documentKey)).first();
