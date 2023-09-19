@@ -22,19 +22,13 @@ public class DocumentDefencesService {
     public void enableOrDisableDocument(boolean switchValue, String documentName) {
         MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
         Document document = mongoCollection.find(new Document("_id", documentName)).first();
-        if (document == null) {
+        if (document == null || (boolean) document.get("enabled") == switchValue) {
             return;
         }
 
         Document update = new Document("$set", new Document("enabled", switchValue));
         mongoCollection.updateOne(Filters.eq("_id", documentName),
                 update);
-
-        String logMessage = "Called enableOrDisableDocument, operation: ";
-        if (switchValue == false) {
-            logMessage = logMessage + "";
-        }
-
     }
 
 }

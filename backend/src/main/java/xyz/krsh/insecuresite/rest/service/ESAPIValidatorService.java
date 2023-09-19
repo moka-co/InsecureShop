@@ -24,6 +24,7 @@ import com.mongodb.client.MongoCollection;
 
 @Service
 public class ESAPIValidatorService {
+    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
     protected static final Logger logger = LogManager.getLogger();
 
     @Autowired
@@ -72,6 +73,7 @@ public class ESAPIValidatorService {
 
     public boolean validateBean(Object bean, String documentKey) throws ValidationException {
         logger.info("Retrieving document from repository");
+        loggerSplunk.info("ESAPIValidatorService - Validating: " + bean);
         MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
         Document document = mongoCollection.find(new Document("_id", documentKey)).first();
 
@@ -98,11 +100,9 @@ public class ESAPIValidatorService {
                     throw new ValidationException(
                             "Invalid input: please change " + field + " input value and retry ",
                             "Invalid input: " + value + " is not a valid input for " + field);
+
                 }
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                return false;
-            } catch (ValidationException e) {
-                logger.info(e.getMessage());
                 return false;
             }
         }

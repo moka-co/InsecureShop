@@ -2,10 +2,13 @@ package xyz.krsh.insecuresite.rest.controller.documents;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.owasp.esapi.errors.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.mysql.cj.xdevapi.Schema.Validation;
 
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.service.DocumentDefencesService;
@@ -16,7 +19,7 @@ public class ValidationRuleController {
 
     protected static final Logger logger = LogManager.getLogger();
     protected static final Logger loggerTwo = LogManager.getLogger("File2");
-    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk");
+    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
 
     @Autowired
     private ESAPIValidatorService validator;
@@ -34,6 +37,7 @@ public class ValidationRuleController {
         } catch (Exception e) {
             loggerTwo.warn("ValidationRuleController - Invalid bean: " + boardgameDto.getName() + " - "
                     + boardgameDto.toString());
+            loggerSplunk.info("ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
             return false;
         }
 
@@ -42,12 +46,15 @@ public class ValidationRuleController {
     @GetMapping("/api/document/test-fail/")
     public boolean getStringValidationRuleFail() {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
-                "<script>alert(1)</script>descriptionsome descriptionsome descriptionsome descriptionsome description");
+                "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
             loggerTwo.info("ValidationRuleController - Called /api/document/test");
             return validator.validateBean(boardgameDto, "boardgame_v2");
+        } catch (ValidationException e) {
+            loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
+            return false;
         } catch (Exception e) {
-            loggerTwo.warn("ValidationRuleController: Invalid bean: " + boardgameDto.toString());
+            loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
             return false;
         }
 
@@ -55,12 +62,14 @@ public class ValidationRuleController {
 
     @PostMapping("/api/document/up/")
     public void defencesUp() {
+        logger.info("Called /api/document/up/");
         defenceService.enableOrDisableDocument(true, "boardgame_v2");
 
     }
 
     @PostMapping("/api/document/down/")
     public void defencesDown() {
+        logger.info("Called /api/document/down/");
         defenceService.enableOrDisableDocument(false, "boardgame_v2");
     }
 
