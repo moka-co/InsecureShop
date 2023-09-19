@@ -13,6 +13,9 @@
         <File name="Splunk-log" fileName="src\main\resources\logs\splunk.log">
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
         </File>
+        <Socket name="Splunk-socket" host="127.0.0.1" port="50123">
+            <PatternLayout pattern="%p: %d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
+        </Socket>
     </Appenders>
 
     <Loggers>
@@ -23,8 +26,11 @@
         <Logger name="File2" level="debug" >
             <AppenderRef ref="File2"/>
         </Logger>
-        <Logger name="Splunk" level="trace">
-            <AppenderRef ref="Splunk-Log"/>
+        <Logger name="Splunk" level="debug">
+            <AppenderRef ref="Splunk-log"/>
+        </Logger>
+        <Logger name="Splunk-socket" level="INFO">
+            <AppenderRef ref="Splunk-socket"/>
         </Logger>
     </Loggers>
 </Configuration>
