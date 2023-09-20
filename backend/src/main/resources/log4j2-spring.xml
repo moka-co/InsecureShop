@@ -16,6 +16,9 @@
         <Socket name="Splunk-socket" host="127.0.0.1" port="50123">
             <PatternLayout pattern="%p: %d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
         </Socket>
+        <Console name="console-context" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}&#9;IpAddress: %X{IpAddress}&#9;Cookie: %X{JSESSIONID}&#9;%msg%n" />
+        </Console>
     </Appenders>
 
     <Loggers>
@@ -23,6 +26,9 @@
             <AppenderRef ref="console" />
             <AppenderRef ref="File"/>
         </Root>
+        <Logger name="console-context" level="trace">
+            <AppenderRef ref="console-context" />
+        </Logger>
         <Logger name="File2" level="debug" >
             <AppenderRef ref="File2"/>
         </Logger>

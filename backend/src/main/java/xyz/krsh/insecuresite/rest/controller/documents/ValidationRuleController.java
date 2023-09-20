@@ -1,14 +1,19 @@
 package xyz.krsh.insecuresite.rest.controller.documents;
 
+import java.security.Principal;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.owasp.esapi.errors.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.mysql.cj.xdevapi.Schema.Validation;
 
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.service.DocumentDefencesService;
@@ -20,6 +25,7 @@ public class ValidationRuleController {
     protected static final Logger logger = LogManager.getLogger();
     protected static final Logger loggerTwo = LogManager.getLogger("File2");
     protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
+    protected static final Logger loggerWithContext = LogManager.getLogger("console-context");
 
     @Autowired
     private ESAPIValidatorService validator;
@@ -60,17 +66,31 @@ public class ValidationRuleController {
 
     }
 
-    @PostMapping("/api/document/up/")
-    public void defencesUp() {
+    @PostMapping("/api/document/up")
+    public void defencesUp(@RequestParam(name = "apiKey") String apiKey) {
         logger.info("Called /api/document/up/");
-        defenceService.enableOrDisableDocument(true, "boardgame_v2");
+        defenceService.enableOrDisableDocument(true, "boardgame_v2", Adminkey);
 
     }
 
-    @PostMapping("/api/document/down/")
-    public void defencesDown() {
+    @PostMapping("/api/document/down")
+    public void defencesDown(@RequestParam(name = "apiKey") String apiKey) {
         logger.info("Called /api/document/down/");
-        defenceService.enableOrDisableDocument(false, "boardgame_v2");
+        defenceService.enableOrDisableDocument(false, "boardgame_v2", apiKey);
+    }
+
+    @GetMapping("/api/logging-test/")
+    public void loggingTest(HttpServletRequest request, Principal principal) {
+        if (principal != null) {
+            ThreadContext.put("username", principal.getName());
+        }
+        if (request != null && request.getCookies().length > 0) {
+            Cookie jsessionid = request.getCookies()[0];
+            ThreadContext.put("IpAddress", request.getRemoteAddr());
+            ThreadContext.put(jsessionid.getName(), jsessionid.getValue());
+        }
+        loggerWithContext.info("Logged request");
+        ThreadContext.clearAll();
     }
 
 }

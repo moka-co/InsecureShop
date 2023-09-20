@@ -43,8 +43,10 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
                     return;
                 }
             }
+        } catch (NullPointerException e) {
+
         } catch (Exception e) {
-            logger.info(e);
+            logger.warn(e);
             filterChain.doFilter(request, response);
         }
 

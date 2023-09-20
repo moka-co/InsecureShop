@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,18 @@ public class DocumentDefencesService {
     protected static final Logger logger = LogManager.getLogger();
     protected static final Logger loggerTwo = LogManager.getLogger("File2");
 
+    @Value("${apiKey}")
+    String apiKey;
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public void enableOrDisableDocument(boolean switchValue, String documentName) {
+    public void enableOrDisableDocument(boolean switchValue, String documentName, String adminKey) {
+        if (adminKey.equals(apiKey) == false) {
+            logger.warn("Incorret key: " + adminKey);
+            return;
+        }
+
         MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
         Document document = mongoCollection.find(new Document("_id", documentName)).first();
         if (document == null || (boolean) document.get("enabled") == switchValue) {
