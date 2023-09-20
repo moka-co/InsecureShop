@@ -73,7 +73,6 @@ public class ESAPIValidatorService {
 
     public boolean validateBean(Object bean, String documentKey) throws ValidationException {
         logger.info("Retrieving document from repository");
-        loggerSplunk.info("ESAPIValidatorService - Validating: " + bean);
         MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
         Document document = mongoCollection.find(new Document("_id", documentKey)).first();
 

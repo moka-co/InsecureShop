@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.service.DocumentDefencesService;
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
+import xyz.krsh.insecuresite.security.LoggerWrapper;
 
 @RestController
 public class ValidationRuleController {
@@ -25,6 +26,7 @@ public class ValidationRuleController {
     protected static final Logger logger = LogManager.getLogger();
     protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
     protected static final Logger loggerWithContext = LogManager.getLogger("console-context");
+    protected LoggerWrapper loggerWrapper = new LoggerWrapper();
 
     @Autowired
     private ESAPIValidatorService validator;
@@ -33,10 +35,12 @@ public class ValidationRuleController {
     private DocumentDefencesService defenceService;
 
     @GetMapping("/api/document/test/")
-    public boolean getStringValidationRule() {
+    public boolean getStringValidationRule(HttpServletRequest request, Principal principal) {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
+            loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerSplunk.info("ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
             loggerSplunk.info("ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
@@ -46,10 +50,12 @@ public class ValidationRuleController {
     }
 
     @GetMapping("/api/document/test-fail/")
-    public boolean getStringValidationRuleFail() {
+    public boolean getStringValidationRuleFail(HttpServletRequest request, Principal principal) {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
+            loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerSplunk.info("ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (ValidationException e) {
             loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
