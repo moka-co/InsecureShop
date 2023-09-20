@@ -4,23 +4,17 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
-        <Socket name="Splunk-socket" host="127.0.0.1" port="50123">
-            <PatternLayout pattern="%p: %d{dd-MM-yyyy HH:mm:ss}&#9;%msg%n"/>
+        <Socket name="Splunk Logger" host="127.0.0.1" port="50123">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %logger{36}&#9;IpAddress: %X{IpAddress}&#9;JSESSIONID: %X{JSESSIONID}&#9;%msg%n" />
         </Socket>
-        <Console name="console-context" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}&#9;IpAddress: %X{IpAddress}&#9;JSESSIONID: %X{JSESSIONID}&#9;%msg%n" />
-        </Console>
     </Appenders>
 
     <Loggers>
         <Root level="trace">
             <AppenderRef ref="console" />
         </Root>
-        <Logger name="console-context" level="trace">
-            <AppenderRef ref="console-context" />
-        </Logger>
-        <Logger name="Splunk-socket" level="INFO">
-            <AppenderRef ref="Splunk-socket"/>
+        <Logger name="Splunk Logger" level="INFO">
+            <AppenderRef ref="Splunk Logger"/>
         </Logger>
     </Loggers>
 </Configuration>

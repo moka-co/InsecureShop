@@ -24,7 +24,6 @@ import com.mongodb.client.MongoCollection;
 
 @Service
 public class ESAPIValidatorService {
-    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
     protected static final Logger logger = LogManager.getLogger();
 
     @Autowired

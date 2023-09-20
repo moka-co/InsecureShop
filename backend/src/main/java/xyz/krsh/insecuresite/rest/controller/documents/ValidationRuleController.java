@@ -24,8 +24,6 @@ import xyz.krsh.insecuresite.security.LoggerWrapper;
 public class ValidationRuleController {
 
     protected static final Logger logger = LogManager.getLogger();
-    protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
-    protected static final Logger loggerWithContext = LogManager.getLogger("console-context");
     protected LoggerWrapper loggerWrapper = new LoggerWrapper();
 
     @Autowired
@@ -40,10 +38,11 @@ public class ValidationRuleController {
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
             loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
-            loggerSplunk.info("ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
-            loggerSplunk.info("ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
+            logger.warn(e);
+            loggerWrapper.log(request, principal,
+                    "ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
             return false;
         }
 
@@ -55,13 +54,11 @@ public class ValidationRuleController {
                 "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
             loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
-            loggerSplunk.info("ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
-        } catch (ValidationException e) {
-            loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
-            return false;
         } catch (Exception e) {
-            loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
+            logger.warn(e);
+            loggerWrapper.log(request, principal,
+                    "ValidationRuleController - Invalid bean: " + boardgameDto.toString());
             return false;
         }
 
@@ -90,7 +87,7 @@ public class ValidationRuleController {
             ThreadContext.put("IpAddress", request.getRemoteAddr());
             ThreadContext.put(jsessionid.getName(), jsessionid.getValue());
         }
-        loggerWithContext.info("Logged request");
+        // loggerWithContext.info("Logged request");
         ThreadContext.clearAll();
     }
 

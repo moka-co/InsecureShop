@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
 public class LoggerWrapper {
-    protected static final Logger logger = LogManager.getLogger("console-context");
+    protected static final Logger logger = LogManager.getLogger("Splunk Logger");
 
     public void log(HttpServletRequest request, Principal principal, String message) {
         if (principal != null) {
@@ -23,6 +23,7 @@ public class LoggerWrapper {
         }
 
         logger.info(message);
+        ThreadContext.clearAll();
     }
 
 }
