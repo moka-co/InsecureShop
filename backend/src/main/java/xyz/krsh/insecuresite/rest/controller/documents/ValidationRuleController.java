@@ -23,7 +23,6 @@ import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 public class ValidationRuleController {
 
     protected static final Logger logger = LogManager.getLogger();
-    protected static final Logger loggerTwo = LogManager.getLogger("File2");
     protected static final Logger loggerSplunk = LogManager.getLogger("Splunk-socket");
     protected static final Logger loggerWithContext = LogManager.getLogger("console-context");
 
@@ -38,11 +37,8 @@ public class ValidationRuleController {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
-            loggerTwo.info("ValidationRuleController - Called /api/document/test");
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
-            loggerTwo.warn("ValidationRuleController - Invalid bean: " + boardgameDto.getName() + " - "
-                    + boardgameDto.toString());
             loggerSplunk.info("ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
             return false;
         }
@@ -54,7 +50,6 @@ public class ValidationRuleController {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
-            loggerTwo.info("ValidationRuleController - Called /api/document/test");
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (ValidationException e) {
             loggerSplunk.info("ValidationRuleController - Invalid bean: " + boardgameDto.toString());
@@ -69,7 +64,7 @@ public class ValidationRuleController {
     @PostMapping("/api/document/up")
     public void defencesUp(@RequestParam(name = "apiKey") String apiKey) {
         logger.info("Called /api/document/up/");
-        defenceService.enableOrDisableDocument(true, "boardgame_v2", Adminkey);
+        defenceService.enableOrDisableDocument(true, "boardgame_v2", apiKey);
 
     }
 

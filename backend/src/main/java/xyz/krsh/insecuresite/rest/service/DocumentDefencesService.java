@@ -15,7 +15,6 @@ import com.mongodb.client.model.Filters;
 public class DocumentDefencesService {
 
     protected static final Logger logger = LogManager.getLogger();
-    protected static final Logger loggerTwo = LogManager.getLogger("File2");
 
     @Value("${apiKey}")
     String apiKey;
