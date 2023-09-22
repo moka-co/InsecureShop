@@ -137,7 +137,7 @@ public class ESAPIValidatorService {
             returnValue = stringValidationRule.isValid("Check if input " + input + "is valid", input.toString());
 
         } else if (typeName.equals("java.lang.Integer")
-                || typeName.equals("java.lang.Float")) {
+                || typeName.equals("java.lang.Float") || typeName.equals("java.lang.Double")) {
             NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
                     min, max);
             returnValue = numberValidationRule.isValid("Check if input " + input + " is valid ", input.toString());

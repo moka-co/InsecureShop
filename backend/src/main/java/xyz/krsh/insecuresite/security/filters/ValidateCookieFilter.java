@@ -38,12 +38,16 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
 
         try {
             Cookie[] cookies = request.getCookies();
-            for (Cookie cookie : cookies) {
-                if (!validator.isValidCookie(cookieDocumentId, cookie.getValue())) {
-                    return;
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (!validator.isValidCookie(cookieDocumentId, cookie.getValue())) {
+                        return;
+                    }
                 }
             }
+
         } catch (NullPointerException e) {
+            filterChain.doFilter(request, response);
 
         } catch (Exception e) {
             logger.warn(e);

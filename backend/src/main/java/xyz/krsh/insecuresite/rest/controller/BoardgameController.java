@@ -21,6 +21,7 @@ import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
 
+import java.security.Principal;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
@@ -61,13 +62,14 @@ public class BoardgameController {
      */
     @PostMapping(value = "/add")
     @ApiResponse(description = "Add a new boardgame to the database")
-    public ResponseEntity<String> addBoardgameReq(@RequestBody BoardgameDto boardgameDto) {
+    public ResponseEntity<String> addBoardgameReq(@RequestBody BoardgameDto boardgameDto, HttpServletRequest request,
+            Principal principal) {
         try {
-            boardgameService.addBoardgame(boardgameDto);
+            boardgameService.addBoardgame(boardgameDto, principal, request);
             return new ResponseEntity<String>("Successfully added " + boardgameDto.getName(), HttpStatus.ACCEPTED);
 
         } catch (ValidationException e) {
-            
+
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
@@ -85,10 +87,10 @@ public class BoardgameController {
     @PostMapping(value = "/{name}/edit")
     @ApiResponse(description = "Edit an existing boardgame by specifying his name and optional parameters")
     public ResponseEntity<String> ediBoardgame(@PathVariable String name, @RequestBody BoardgameDto boardgameDto,
-            HttpServletRequest request) {
+            HttpServletRequest request, Principal principal) {
 
         try {
-            boardgameService.editBoardgame(name, boardgameDto);
+            boardgameService.editBoardgame(name, boardgameDto, principal, request);
             return new ResponseEntity<String>("Successfully edited boardgame " + name, HttpStatus.OK);
         } catch (ItemNotFoundException | IndexOutOfBoundsException e2) {
             return new ResponseEntity<String>("Boardgame " + name + " not found ", HttpStatus.NOT_FOUND);
@@ -105,9 +107,11 @@ public class BoardgameController {
      */
     @PostMapping(value = "/{name}/delete")
     @ApiResponse(description = "Delete a boardgame by his name")
-    public ResponseEntity<String> deleteBoardgame(@PathVariable String name) throws EmptyResultDataAccessException {
+    public ResponseEntity<String> deleteBoardgame(@PathVariable String name, Principal principal,
+            HttpServletRequest request) throws EmptyResultDataAccessException {
         try {
-            return new ResponseEntity<String>(boardgameService.deleteBoardgame(name), HttpStatus.OK);
+            return new ResponseEntity<String>(boardgameService.deleteBoardgame(name, principal, request),
+                    HttpStatus.OK);
 
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);

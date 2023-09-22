@@ -16,10 +16,13 @@ public class LoggerWrapper {
         if (principal != null) {
             ThreadContext.put("username", principal.getName());
         }
-        if (request != null && request.getCookies().length > 0) {
-            Cookie jsessionid = request.getCookies()[0];
+        if (request != null) {
             ThreadContext.put("IpAddress", request.getRemoteAddr());
-            ThreadContext.put(jsessionid.getName(), jsessionid.getValue());
+
+            if (request.getCookies() != null && request.getCookies().length > 0) {
+                Cookie jsessionid = request.getCookies()[0];
+                ThreadContext.put(jsessionid.getName(), jsessionid.getValue());
+            }
         }
 
         logger.info(message);

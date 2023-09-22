@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import xyz.krsh.insecuresite.rest.entities.User;
 import xyz.krsh.insecuresite.rest.repository.UserRepository;
+import xyz.krsh.insecuresite.security.LoggerWrapper;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 
 import org.apache.logging.log4j.Logger;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     protected static final Logger logger = LogManager.getLogger();
+    protected static final LoggerWrapper loggerSplunk = new LoggerWrapper();
 
     @Autowired
     private UserRepository userRepository;
@@ -27,6 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.getUserByEmail(email); // Get user from the database
 
         if (user == null) {
+            loggerSplunk.log(null, null, "user not found");
             throw new UsernameNotFoundException("Could not find user");
         }
 

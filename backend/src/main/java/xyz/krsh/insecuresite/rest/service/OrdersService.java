@@ -6,12 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,8 +22,6 @@ import xyz.krsh.insecuresite.rest.repository.OrderedBoardgamesRepository;
 import xyz.krsh.insecuresite.rest.repository.OrdersRepository;
 import xyz.krsh.insecuresite.rest.repository.UserRepository;
 import xyz.krsh.insecuresite.security.MyUserDetails;
-import xyz.krsh.insecuresite.security.HibernateValidator.hibernateValidatorBootstrapping.MyMessageInterpolator;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -38,10 +30,8 @@ public class OrdersService {
 
     protected static final Logger logger = LogManager.getLogger();
 
-    private static Validator validator = Validation.byDefaultProvider().configure()
-            .messageInterpolator(new MyMessageInterpolator())
-            .buildValidatorFactory()
-            .getValidator();
+    @Autowired
+    ESAPIValidatorService validator;
 
     @Autowired
     OrdersRepository ordersRepository;
@@ -144,15 +134,7 @@ public class OrdersService {
             throws UnauthorizedException {
 
         logger.info("Begin Validation in OrdersService.addBoardgameToOrder()");
-        Set<ConstraintViolation<OrderedBoardgameDto>> constraintViolations = validator.validate(obd);
-
-        constraintViolations.stream().forEach(cv -> {
-            logger.warn(cv.getMessage());
-            throw new IllegalArgumentException(cv.getMessage());
-
-        });
-
-        logger.info("Ended with success Validation in OrdersService.addBoardgameToOrder()");
+        // TODO: add validation for OrderedBoardgameDto
 
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
         Optional<Boardgame> queryBoardgame = boardgameRepository.findById(obd.getName());
