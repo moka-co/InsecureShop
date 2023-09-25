@@ -1,9 +1,11 @@
 package xyz.krsh.insecuresite.rest.service;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +23,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import com.mongodb.client.MongoCollection;
+
+import xyz.krsh.insecuresite.security.HibernateValidator.inputValidation.HttpBodyParser;
 
 @Service
 public class ESAPIValidatorService {
@@ -40,22 +44,22 @@ public class ESAPIValidatorService {
         return validator;
     }
 
-    public boolean isValidCookie(String documentName, String input) {
+    public boolean isValidString(String documentName, String input) {
 
         try {
             MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
-            Document document = mongoCollection.find(new Document("_id", "jsessionid_v2")).first();
+            Document document = mongoCollection.find(new Document("_id", documentName)).first();
 
             if (document == null) {
-                throw new NullPointerException("Document with name \"jsessionid_v2\" not found");
+                throw new NullPointerException("Document with name '" + documentName + "' not found");
             }
 
             if ((boolean) document.get("enabled") == false) {
                 return true;
             }
 
-            String typename = "CookieValidationRule";
-            String whitelist = (String) document.get("whitelist");
+            String typename = documentName + "ValidationRule";
+            String whitelist = (String) document.get("rule");
 
             if (whitelist == null) {
                 throw new ValidationException("Internal server error",
@@ -148,5 +152,17 @@ public class ESAPIValidatorService {
 
         return returnValue;
 
+    }
+
+    public boolean testAuthenticationForm(Map<String, String[]> requestParameterMap) throws IOException {
+        Map<String, String> formDataMap = new HttpBodyParser().convertHttpBodyToMap(requestParameterMap);
+        if (formDataMap.get("username") != null && formDataMap.get("password") != null) {
+
+            return isValidString("email_v1", formDataMap.get("username"))
+                    && isValidString("password_v1", formDataMap.get("password"));
+        }
+
+        // Either username or password is missing, therefore return false
+        return false;
     }
 }

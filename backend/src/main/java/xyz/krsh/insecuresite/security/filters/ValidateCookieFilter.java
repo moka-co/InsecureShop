@@ -3,6 +3,7 @@ package xyz.krsh.insecuresite.security.filters;
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
@@ -33,24 +36,30 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        System.out.println("Validator: " + validator);
 
         String cookieDocumentId = "jsessionid_v2";
+
+        if (validator == null) { // Lazy loading the ESAPI Validator service class
+            ServletContext servletContext = request.getServletContext();
+            WebApplicationContext webApplicationContext = WebApplicationContextUtils
+                    .getRequiredWebApplicationContext(servletContext);
+            validator = webApplicationContext.getBean(ESAPIValidatorService.class);
+
+        }
 
         try {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    if (!validator.isValidCookie(cookieDocumentId, cookie.getValue())) {
+                    if (!validator.isValidString(cookieDocumentId, cookie.getValue())) {
                         return;
                     }
                 }
             }
 
-        } catch (NullPointerException e) {
-            filterChain.doFilter(request, response);
-
         } catch (Exception e) {
-            logger.warn(e);
+            logger.info(e + " " + e.getMessage());
             filterChain.doFilter(request, response);
         }
 
