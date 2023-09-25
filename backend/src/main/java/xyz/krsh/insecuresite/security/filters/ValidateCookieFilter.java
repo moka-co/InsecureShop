@@ -36,7 +36,6 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        System.out.println("Validator: " + validator);
 
         String cookieDocumentId = "jsessionid_v2";
 
