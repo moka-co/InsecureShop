@@ -5,7 +5,7 @@
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
         <Socket name="Splunk Logger" host="127.0.0.1" port="50123">
-            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %logger{36}&#9;IpAddress: %X{IpAddress}&#9;JSESSIONID: %X{JSESSIONID}&#9;%msg%n" />
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %logger{36}&#9;LoggedUser=%X{username}&#9;IpAddress: %X{IpAddress}&#9;JSESSIONID: %X{JSESSIONID}&#9;ContentLength: %X{ContentLength}&#9;%msg%n" />
         </Socket>
     </Appenders>
 

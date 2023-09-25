@@ -20,6 +20,7 @@ import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
+import xyz.krsh.insecuresite.security.LoggerWrapper;
 
 import java.security.Principal;
 import java.util.List;
@@ -30,6 +31,8 @@ import javax.validation.ValidationException;
 @RequestMapping("/api/boardgames")
 @Tag(name = "Boardgame Controller", description = "This controller is responsable for handling HTTP request related to boardgame management")
 public class BoardgameController {
+
+    private static final LoggerWrapper logger = new LoggerWrapper();
 
     @Autowired
     BoardgameService boardgameService;
@@ -52,10 +55,12 @@ public class BoardgameController {
     @GetMapping("/{name}")
     @ResponseBody
     @ApiResponse(description = "Return a boardgame from the database querying by his primary key")
-    public Boardgame getById(@PathVariable String name) throws ItemNotFoundException {
+    public Boardgame getById(@PathVariable String name, HttpServletRequest request) throws ItemNotFoundException {
         try {
             return boardgameService.findByNameContaining(name).get(0);
         } catch (ItemNotFoundException e) {
+            logger.log(request,
+                    "Cannot find Boardgame with name + '" + name + "'");
             return null;
         }
     }
@@ -72,6 +77,8 @@ public class BoardgameController {
             return new ResponseEntity<String>("Successfully added " + boardgameDto.getName(), HttpStatus.ACCEPTED);
 
         } catch (ValidationException e) {
+            logger.log(request,
+                    "Invalid bean: " + boardgameDto.toString());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
@@ -97,6 +104,8 @@ public class BoardgameController {
         } catch (ItemNotFoundException | IndexOutOfBoundsException e2) {
             return new ResponseEntity<String>("Boardgame " + name + " not found ", HttpStatus.NOT_FOUND);
         } catch (ValidationException | IllegalArgumentException e) {
+            logger.log(request,
+                    "Invalid bean: " + boardgameDto.toString());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -116,6 +125,8 @@ public class BoardgameController {
                     HttpStatus.OK);
 
         } catch (IllegalArgumentException e) {
+            logger.log(request,
+                    "Invalid bean: cannot find boardgame with name '" + name + "'");
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {

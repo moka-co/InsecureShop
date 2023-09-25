@@ -21,6 +21,9 @@ public class LoggerWrapper {
                 ThreadContext.put("username", principal.getName());
             }
 
+            // Content Length
+            ThreadContext.put("ContentLength", String.valueOf(request.getContentLength()));
+
             // Log Ip address
             ThreadContext.put("IpAddress", request.getRemoteAddr());
 

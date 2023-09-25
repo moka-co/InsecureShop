@@ -12,7 +12,6 @@ import xyz.krsh.insecuresite.security.LoggerWrapper;
 import xyz.krsh.insecuresite.security.MyUserDetails;
 
 import org.apache.logging.log4j.Logger;
-import org.owasp.esapi.errors.ValidationException;
 import org.apache.logging.log4j.LogManager;
 
 public class UserDetailsServiceImpl implements UserDetailsService {
