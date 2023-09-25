@@ -6,7 +6,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,12 +30,12 @@ public class CustomLoginFilter extends OncePerRequestFilter {
          */
         if (request.getRequestURI().equals("/api/perform_login")) {
             ESAPIAuthenticationFormValidator validator = new ESAPIAuthenticationFormValidator();
-            loggerSplunk.log(request, null, "New Login attempt");
 
             if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
+                loggerSplunk.log(request, "New Login detected");
                 filterChain.doFilter(request, response);
             } else {
-                loggerSplunk.log(request, null, "Login attempt failed");
+                loggerSplunk.log(request, "New Login attempt failed");
                 return;
             }
         } else {

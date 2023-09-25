@@ -32,15 +32,15 @@ public class ValidationRuleController {
     private DocumentDefencesService defenceService;
 
     @GetMapping("/api/document/test/")
-    public boolean getStringValidationRule(HttpServletRequest request, Principal principal) {
+    public boolean getStringValidationRule(HttpServletRequest request) {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
-            loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerWrapper.log(request, "ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
             logger.warn(e);
-            loggerWrapper.log(request, principal,
+            loggerWrapper.log(request,
                     "ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
             return false;
         }
@@ -48,15 +48,15 @@ public class ValidationRuleController {
     }
 
     @GetMapping("/api/document/test-fail/")
-    public boolean getStringValidationRuleFail(HttpServletRequest request, Principal principal) {
+    public boolean getStringValidationRuleFail(HttpServletRequest request) {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
-            loggerWrapper.log(request, principal, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerWrapper.log(request, "ESAPIValidatorService - Validating: " + boardgameDto);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
             logger.warn(e);
-            loggerWrapper.log(request, principal,
+            loggerWrapper.log(request,
                     "ValidationRuleController - Invalid bean: " + boardgameDto.toString());
             return false;
         }
@@ -77,7 +77,8 @@ public class ValidationRuleController {
     }
 
     @GetMapping("/api/logging-test/")
-    public void loggingTest(HttpServletRequest request, Principal principal) {
+    public void loggingTest(HttpServletRequest request) {
+        Principal principal = request.getUserPrincipal();
         if (principal != null) {
             ThreadContext.put("username", principal.getName());
         }

@@ -1,7 +1,6 @@
 package xyz.krsh.insecuresite.rest.service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -46,12 +45,12 @@ public class BoardgameService {
 
     }
 
-    public void addBoardgame(BoardgameDto boardgameDto, Principal principal, HttpServletRequest request)
+    public void addBoardgame(BoardgameDto boardgameDto, HttpServletRequest request)
             throws IllegalAccessException, InvocationTargetException, org.owasp.esapi.errors.ValidationException {
 
         logger.info("Beginning validation for " + boardgameDto.toString());
         if (validator.validateBean(boardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, principal, "Validation failed for " + boardgameDto.toString());
+            loggerSplunk.log(request, "Validation failed for " + boardgameDto.toString());
             return;
         }
         Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
@@ -60,7 +59,7 @@ public class BoardgameService {
 
     }
 
-    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto, Principal principal,
+    public void editBoardgame(String boardgameName, BoardgameDto boardgameDto,
             HttpServletRequest request)
             throws ItemNotFoundException, IndexOutOfBoundsException, IllegalAccessException, InvocationTargetException,
             org.owasp.esapi.errors.ValidationException {
@@ -81,9 +80,9 @@ public class BoardgameService {
         }
 
         // Validation
-        loggerSplunk.log(request, principal, "Beginning validation for " + newBoardgameDto.toString());
+        loggerSplunk.log(request, "Beginning validation for " + newBoardgameDto.toString());
         if (validator.validateBean(newBoardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, principal, "Validation failed for " + newBoardgameDto.toString());
+            loggerSplunk.log(request, "Validation failed for " + newBoardgameDto.toString());
             return;
         }
 
@@ -91,13 +90,13 @@ public class BoardgameService {
         boardgameRepository.update(boardgame);
     }
 
-    public String deleteBoardgame(String name, Principal principal, HttpServletRequest request)
+    public String deleteBoardgame(String name, HttpServletRequest request)
             throws org.owasp.esapi.errors.ValidationException {
 
-        loggerSplunk.log(request, principal, "Requested deletion for boardgame with name " + name);
+        loggerSplunk.log(request, "Requested deletion for boardgame with name " + name);
         BoardgameDto boardgameDto = new BoardgameDto(name, (float) 1.0, 1, name);
         if (validator.validateBean(boardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, principal, "Validation failed for Boardgame name " + name);
+            loggerSplunk.log(request, "Validation failed for Boardgame name " + name);
             return "failed";
         }
 
@@ -108,7 +107,7 @@ public class BoardgameService {
 
         if (obQueryResult.isEmpty() || bQueryResult.isEmpty()) {
             logger.fatal("Illegal state, cannot find OrderedBoardgame or Boardgame Entity associated to Order");
-            loggerSplunk.log(request, principal, "Illegal Access, cannot find boardgame with " + name);
+            loggerSplunk.log(request, "Illegal Access, cannot find boardgame with " + name);
             throw new RuntimeException("Internal server error");
         }
 
