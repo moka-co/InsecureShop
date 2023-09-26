@@ -1,4 +1,4 @@
-package xyz.krsh.insecuresite.rest.controller.documents;
+package xyz.krsh.insecuresite.rest.controller;
 
 import java.security.Principal;
 

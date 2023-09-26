@@ -25,8 +25,6 @@ import com.mongodb.client.MongoCollection;
 import ESAPI.CustomValidationRule;
 import xyz.krsh.insecuresite.InsecuresiteApplication;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
-import xyz.krsh.insecuresite.rest.entities.mongodb.ValidationRuleDocument;
-import xyz.krsh.insecuresite.rest.repository.mongodb.ValidationRuleRepository;
 import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 
 @DataMongoTest
@@ -45,9 +43,6 @@ public class ESAPICustomInputValidationTest {
     private MongoTemplate mongoTemplate;
 
     private MongoCollection<Document> mongoCollection;
-
-    @Autowired
-    private ValidationRuleRepository validationRuleRepository;
 
     @Before
     @Autowired
@@ -106,17 +101,6 @@ public class ESAPICustomInputValidationTest {
         // Validator validator = validatorWrapper.getValidator();
         // validator.addRule(integerRule);
 
-    }
-
-    // @Test
-    public void checkValidationRuleDocument() {
-        assertNotNull(validationRuleRepository);
-
-        ValidationRuleDocument inserted = validationRuleRepository.save(new ValidationRuleDocument("test", "^[]{1,}$"));
-        assertTrue("id is 'test'", inserted.getId().equals("test"));
-        assertTrue("rule is '^[]{1,}$'", inserted.getRule().equals("^[]{1,}$"));
-
-        inserted = validationRuleRepository.save(new ValidationRuleDocument("jsessionid", "^[A-Za-z0-9-_]{10,50}$"));
     }
 
     // @Test
