@@ -23,8 +23,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import com.mongodb.client.MongoCollection;
-
-import xyz.krsh.insecuresite.security.HibernateValidator.inputValidation.HttpBodyParser;
+import xyz.krsh.insecuresite.security.util.HttpBodyParser;
 
 @Service
 public class ESAPIValidatorService {

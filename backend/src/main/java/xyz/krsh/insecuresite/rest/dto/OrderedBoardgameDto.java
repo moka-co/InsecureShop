@@ -4,8 +4,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Length;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +18,6 @@ import lombok.ToString;
 public class OrderedBoardgameDto {
 
     @NotNull
-    @Length(max = 1024)
     private String name;
 
     @Min(1)
