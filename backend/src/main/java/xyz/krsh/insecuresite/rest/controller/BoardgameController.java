@@ -59,8 +59,8 @@ public class BoardgameController {
         try {
             return boardgameService.findByNameContaining(name).get(0);
         } catch (ItemNotFoundException e) {
-            logger.log(request,
-                    "Cannot find Boardgame with name + '" + name + "'");
+            logger.log(
+                    "Cannot find Boardgame with name + '" + name + "'", request, HttpStatus.BAD_REQUEST.value());
             return null;
         }
     }
@@ -77,11 +77,14 @@ public class BoardgameController {
             return new ResponseEntity<String>("Successfully added " + boardgameDto.getName(), HttpStatus.ACCEPTED);
 
         } catch (ValidationException e) {
-            logger.log(request,
-                    "Invalid bean: " + boardgameDto.toString());
+            logger.log(
+                    "Invalid bean: " + boardgameDto.toString(), request, HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
+            logger.log(
+                    "Catched exception" + e + " with input: " + boardgameDto.toString(), request,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
             return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -104,8 +107,8 @@ public class BoardgameController {
         } catch (ItemNotFoundException | IndexOutOfBoundsException e2) {
             return new ResponseEntity<String>("Boardgame " + name + " not found ", HttpStatus.NOT_FOUND);
         } catch (ValidationException | IllegalArgumentException e) {
-            logger.log(request,
-                    "Invalid bean: " + boardgameDto.toString());
+            logger.log(
+                    "Invalid bean: " + boardgameDto.toString(), request, HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -125,11 +128,15 @@ public class BoardgameController {
                     HttpStatus.OK);
 
         } catch (IllegalArgumentException e) {
-            logger.log(request,
-                    "Invalid bean: cannot find boardgame with name '" + name + "'");
+            logger.log(
+                    "Invalid bean: cannot find boardgame with name '" + name + "'", request,
+                    HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
+            logger.log(
+                    "Caught exception " + e + " with Boardgame name: '" + name + "'", request,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
             return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

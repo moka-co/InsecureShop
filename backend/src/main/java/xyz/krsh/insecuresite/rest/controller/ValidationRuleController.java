@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,12 +37,13 @@ public class ValidationRuleController {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "descriptionsome descriptionsome descriptionsome descriptionsome description");
         try {
-            loggerWrapper.log(request, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerWrapper.log("ESAPIValidatorService - Validating: " + boardgameDto, request);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
             logger.warn(e);
-            loggerWrapper.log(request,
-                    "ValidationRuleCOntroller - Invalid bean: " + boardgameDto.toString());
+            loggerWrapper.log(
+                    "Caught Exception + " + e + "- Invalid bean: " + boardgameDto.toString(), request,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
             return false;
         }
 
@@ -52,12 +54,13 @@ public class ValidationRuleController {
         BoardgameDto boardgameDto = new BoardgameDto("someValue2", (float) 2.2, 4,
                 "<script>alert(1)</script>description avcbcdsjme description description descriptions description");
         try {
-            loggerWrapper.log(request, "ESAPIValidatorService - Validating: " + boardgameDto);
+            loggerWrapper.log("ESAPIValidatorService - Validating: " + boardgameDto, request);
             return validator.validateBean(boardgameDto, "boardgame_v2");
         } catch (Exception e) {
             logger.warn(e);
-            loggerWrapper.log(request,
-                    "ValidationRuleController - Invalid bean: " + boardgameDto.toString());
+            loggerWrapper.log(
+                    "ValidationRuleController - Invalid bean: " + boardgameDto.toString(), request,
+                    HttpStatus.BAD_REQUEST.value());
             return false;
         }
 

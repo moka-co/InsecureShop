@@ -4,17 +4,14 @@ import java.security.Principal;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
 public class LoggerWrapper {
     protected static final Logger logger = LogManager.getLogger("Splunk Logger");
-    protected static final Logger loggerStatus = LogManager.getLogger("Splunk logger status");
 
-    public void log(HttpServletRequest request, String message) {
+    public void log(String message, HttpServletRequest request) {
         if (request != null) {
             Principal principal = request.getUserPrincipal();
             if (principal != null) { // if user is logged, log it
@@ -22,7 +19,9 @@ public class LoggerWrapper {
             }
 
             // Content Length
-            ThreadContext.put("ContentLength", String.valueOf(request.getContentLength()));
+            String contentLength = request.getContentLength() > 0 ? String.valueOf(request.getContentLength())
+                    : String.valueOf(0);
+            ThreadContext.put("ContentLength", contentLength);
 
             // Log Ip address
             ThreadContext.put("IpAddress", request.getRemoteAddr());
@@ -39,11 +38,12 @@ public class LoggerWrapper {
 
         }
 
+        ThreadContext.put("HttpStatus", String.valueOf(200));
         logger.info(message);
         ThreadContext.clearAll();
     }
 
-    public void log(HttpServletRequest request, HttpServletResponse response) {
+    public void log(String message, HttpServletRequest request, int httpStatus) {
         if (request != null) {
             Principal principal = request.getUserPrincipal();
             if (principal != null) { // if user is logged, log it
@@ -64,10 +64,10 @@ public class LoggerWrapper {
             }
         }
 
-        if (response != null) {
-            ThreadContext.put("HttpStatus", String.valueOf(response.getStatus()));
-            loggerStatus.info("Detected strange Status Code!");
+        if (httpStatus > 0 && httpStatus < 600) {
+            ThreadContext.put("HttpStatus", String.valueOf(httpStatus));
         }
+        logger.info(message);
 
         ThreadContext.clearAll();
 

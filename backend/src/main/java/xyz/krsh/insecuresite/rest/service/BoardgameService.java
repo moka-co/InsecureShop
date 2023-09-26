@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
@@ -50,7 +51,8 @@ public class BoardgameService {
 
         logger.info("Beginning validation for " + boardgameDto.toString());
         if (validator.validateBean(boardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, "Validation failed for " + boardgameDto.toString());
+            loggerSplunk.log("Validation failed for " + boardgameDto.toString(), request,
+                    HttpStatus.BAD_REQUEST.value());
             return;
         }
         Boardgame newBoardgame = new Boardgame(boardgameDto.getName());
@@ -80,9 +82,10 @@ public class BoardgameService {
         }
 
         // Validation
-        loggerSplunk.log(request, "Beginning validation for " + newBoardgameDto.toString());
+        loggerSplunk.log("Beginning validation for " + newBoardgameDto.toString(), request);
         if (validator.validateBean(newBoardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, "Validation failed for " + newBoardgameDto.toString());
+            loggerSplunk.log("Validation failed for " + newBoardgameDto.toString(), request,
+                    HttpStatus.BAD_REQUEST.value());
             return;
         }
 
@@ -93,10 +96,10 @@ public class BoardgameService {
     public String deleteBoardgame(String name, HttpServletRequest request)
             throws org.owasp.esapi.errors.ValidationException {
 
-        loggerSplunk.log(request, "Requested deletion for boardgame with name " + name);
+        loggerSplunk.log("Requested deletion for boardgame with name " + name, request);
         BoardgameDto boardgameDto = new BoardgameDto(name, (float) 1.0, 1, name);
         if (validator.validateBean(boardgameDto, "boardgame_v2") == false) {
-            loggerSplunk.log(request, "Validation failed for Boardgame name " + name);
+            loggerSplunk.log("Validation failed for Boardgame name " + name, request, HttpStatus.BAD_REQUEST.value());
             return "failed";
         }
 
@@ -107,7 +110,8 @@ public class BoardgameService {
 
         if (obQueryResult.isEmpty() || bQueryResult.isEmpty()) {
             logger.fatal("Illegal state, cannot find OrderedBoardgame or Boardgame Entity associated to Order");
-            loggerSplunk.log(request, "Illegal Access, cannot find boardgame with " + name);
+            loggerSplunk.log("Illegal Access, cannot find boardgame with " + name, request,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
             throw new RuntimeException("Internal server error");
         }
 

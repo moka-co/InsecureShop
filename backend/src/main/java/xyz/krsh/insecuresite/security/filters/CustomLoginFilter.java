@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -48,10 +49,10 @@ public class CustomLoginFilter extends OncePerRequestFilter {
             LoggerWrapper loggerSplunk = new LoggerWrapper();
 
             if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
-                loggerSplunk.log(request, "New Login detected");
+                loggerSplunk.log("New Login detected", request);
                 filterChain.doFilter(request, response);
             } else {
-                loggerSplunk.log(request, "New Login attempt failed");
+                loggerSplunk.log("New Login attempt failed", request, HttpStatus.UNAUTHORIZED.value());
                 return;
             }
         } else {

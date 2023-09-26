@@ -1,6 +1,7 @@
 package xyz.krsh.insecuresite.rest.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,7 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.getUserByEmail(email); // Get user from the database
 
         if (user == null) {
-            loggerSplunk.log(null, "User not found");
+            loggerSplunk.log("User not found", null, HttpStatus.INTERNAL_SERVER_ERROR.value());
             throw new UsernameNotFoundException("Could not find user");
         }
 
