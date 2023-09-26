@@ -19,7 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import xyz.krsh.insecuresite.rest.service.UserDetailsServiceImpl;
-import xyz.krsh.insecuresite.security.filters.CustomLoginFilter;
+import xyz.krsh.insecuresite.security.filters.ValidateLoginFormFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -94,7 +94,7 @@ public class SecurityConfiguration {
                 .and()
                 .sessionManagement()
                 .sessionFixation().none()
-                .and().addFilterBefore(new CustomLoginFilter(), UsernamePasswordAuthenticationFilter.class) // Look for
+                .and().addFilterBefore(new ValidateLoginFormFilter(), UsernamePasswordAuthenticationFilter.class) // Look for
                 // https://docs.spring.io/spring-security/servlet/architecture.html#servlet-filters-review
                 .formLogin()
                 .loginProcessingUrl("/api/perform_login")

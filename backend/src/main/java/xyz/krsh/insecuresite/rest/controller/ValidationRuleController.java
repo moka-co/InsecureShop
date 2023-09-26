@@ -79,19 +79,4 @@ public class ValidationRuleController {
         defenceService.enableOrDisableDocument(false, "boardgame_v2", apiKey);
     }
 
-    @GetMapping("/api/logging-test/")
-    public void loggingTest(HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        if (principal != null) {
-            ThreadContext.put("username", principal.getName());
-        }
-        if (request != null && request.getCookies().length > 0) {
-            Cookie jsessionid = request.getCookies()[0];
-            ThreadContext.put("IpAddress", request.getRemoteAddr());
-            ThreadContext.put(jsessionid.getName(), jsessionid.getValue());
-        }
-        // loggerWithContext.info("Logged request");
-        ThreadContext.clearAll();
-    }
-
 }

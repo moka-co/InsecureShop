@@ -20,7 +20,7 @@ import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 import xyz.krsh.insecuresite.security.LoggerWrapper;
 
 @Component
-public class CustomLoginFilter extends OncePerRequestFilter {
+public class ValidateLoginFormFilter extends OncePerRequestFilter {
     protected static final Logger logger = LogManager.getLogger();
 
     @Autowired
@@ -49,10 +49,10 @@ public class CustomLoginFilter extends OncePerRequestFilter {
             LoggerWrapper loggerSplunk = new LoggerWrapper();
 
             if (validator.testAuthenticationForm(request.getParameterMap()) == true) {
-                loggerSplunk.log("New Login detected", request);
+                loggerSplunk.log("Login detected", request);
                 filterChain.doFilter(request, response);
             } else {
-                loggerSplunk.log("New Login attempt failed", request, HttpStatus.UNAUTHORIZED.value());
+                loggerSplunk.log("Login failed: invalid form", request, HttpStatus.UNAUTHORIZED.value());
                 return;
             }
         } else {

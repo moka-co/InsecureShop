@@ -164,4 +164,93 @@ public class ESAPIValidatorService {
         // Either username or password is missing, therefore return false
         return false;
     }
+
+    public Object sanitizeBean(Object bean, String documentKey) {
+        logger.info("Retrieving document from repository");
+        MongoCollection<Document> mongoCollection = this.mongoTemplate.getCollection("validationRuleDocument");
+        Document document = mongoCollection.find(new Document("_id", documentKey)).first();
+
+        if (document == null) {
+            throw new NullPointerException("Document not found");
+        }
+
+        if ((boolean) document.get("enabled") == false) {
+            logger.info(documentKey + " is disabled!");
+            return true;
+        }
+
+        Stream<Method> inputMethods = Arrays.stream(bean.getClass().getMethods())
+                .filter(method -> method.getName().startsWith("get")
+                        && method.getReturnType() != java.lang.Class.class);
+        List<Method> listOfMethods = inputMethods.collect(Collectors.toList());
+        Stream<Method> setMethods = Arrays.stream(bean.getClass().getMethods())
+                .filter(method -> method.getName().startsWith("set")
+                        && method.getReturnType() != java.lang.Class.class);
+        List<Method> listOfSetMethods = setMethods.collect(Collectors.toList());
+
+        for (Method method : listOfMethods) {
+            String field = method.getName().substring(3, method.getName().length()).toLowerCase();
+            try {
+                Object value = method.invoke(bean);
+                value = sanitizeField(document, field, value);
+                for (Method setMethod : listOfSetMethods) {
+                    String setField = method.getName().substring(3, method.getName().length()).toLowerCase();
+                    if (setField.equals(field)) {
+                        method.invoke(setMethod, value);
+                        break;
+                    }
+
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                logger.info("Error: " + e);
+            }
+        }
+        return bean;
+
+    }
+
+    public Object sanitizeField(Document document, String fieldName, Object input) {
+        Object returnValue = null;
+        logger.info("Entering sanifyField method, sanifying " + fieldName + "with value " + input
+                + " against document " + (Document) document.get(fieldName));
+
+        if (document.containsKey(fieldName) == false) {
+            throw new RuntimeException(
+                    fieldName + " is not a document validation rule key, add it to the document");
+        }
+
+        Document ruleDocument = (Document) document.get(fieldName);
+        if (!(boolean) ruleDocument.get("enabled")) {
+            return true;
+        }
+
+        int min = ruleDocument.get("min") != null ? (int) ruleDocument.get("min") : MIN_DEFAULT;
+        int max = ruleDocument.get("max") != null ? (int) ruleDocument.get("max") : MAX_DEFAULT;
+
+        String typeName = input.getClass().getTypeName();
+
+        if (typeName.equals("java.lang.String")) {
+            String rule = (String) ruleDocument.get("rule");
+            StringValidationRule stringValidationRule = new StringValidationRule(fieldName + "ValidationRule", encoder,
+                    rule);
+            stringValidationRule.setMaximumLength(max);
+            stringValidationRule.setMinimumLength(min);
+
+            returnValue = stringValidationRule.sanitize("Sanitizing " + input, (String) input);
+
+        } else if (typeName.equals("java.lang.Integer")
+                || typeName.equals("java.lang.Float") || typeName.equals("java.lang.Double")) {
+            NumberValidationRule numberValidationRule = new NumberValidationRule(fieldName + "ValidationRule", encoder,
+                    min, max);
+            returnValue = numberValidationRule.sanitize("Sanitizing " + input, String.valueOf(input));
+
+        } else {
+            logger.error("Unknown typename");
+            return input;
+        }
+
+        return returnValue;
+
+    }
+
 }

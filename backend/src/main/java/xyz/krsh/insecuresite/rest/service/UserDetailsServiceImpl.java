@@ -33,7 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.getUserByEmail(email); // Get user from the database
 
         if (user == null) {
-            loggerSplunk.log("User not found", null, HttpStatus.INTERNAL_SERVER_ERROR.value());
+            loggerSplunk.log("Login Failed: user not found", null, HttpStatus.INTERNAL_SERVER_ERROR.value());
             throw new UsernameNotFoundException("Could not find user");
         }
 
