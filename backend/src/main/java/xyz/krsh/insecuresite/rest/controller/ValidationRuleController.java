@@ -64,29 +64,29 @@ public class ValidationRuleController {
 
     @PostMapping("/api/document/up/boardgame")
     public void boardgameDefencesUp(@RequestParam(name = "apiKey") String apiKey) {
-        logger.info("Called /api/document/up/");
+        logger.info("Called /api/document/up/boardgame");
         defenceService.enableOrDisableDocument(true, "boardgame_v2", apiKey);
 
     }
 
     @PostMapping("/api/document/down/boardgame")
     public void boardgameDefencesDown(@RequestParam(name = "apiKey") String apiKey) {
-        logger.info("Called /api/document/down/");
+        logger.info("Called /api/document/down/boardgame");
         defenceService.enableOrDisableDocument(false, "boardgame_v2", apiKey);
-    }
-
-    @PostMapping("/api/document/down/login")
-    public void loginDefencesDown(@RequestParam(name = "apiKey") String apiKey) {
-        logger.info("Called /api/document/down/");
-        defenceService.enableOrDisableDocument(false, "email_v1", apiKey);
-        defenceService.enableOrDisableDocument(false, "password_v1", apiKey);
     }
 
     @PostMapping("/api/document/up/login")
     public void loginDefencesUp(@RequestParam(name = "apiKey") String apiKey) {
-        logger.info("Called /api/document/down/");
+        logger.info("Called /api/document/up/login");
         defenceService.enableOrDisableDocument(true, "email_v1", apiKey);
         defenceService.enableOrDisableDocument(true, "password_v1", apiKey);
+    }
+
+    @PostMapping("/api/document/down/login")
+    public void loginDefencesDown(@RequestParam(name = "apiKey") String apiKey) {
+        logger.info("Called /api/document/down/login");
+        defenceService.enableOrDisableDocument(false, "email_v1", apiKey);
+        defenceService.enableOrDisableDocument(false, "password_v1", apiKey);
     }
 
 }

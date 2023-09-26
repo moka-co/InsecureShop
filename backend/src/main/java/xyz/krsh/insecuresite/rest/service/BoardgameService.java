@@ -3,6 +3,7 @@ package xyz.krsh.insecuresite.rest.service;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class BoardgameService {
     protected static final LoggerWrapper loggerSplunk = new LoggerWrapper();
 
     @Autowired
-    private static ESAPIValidatorService validator;
+    ESAPIValidatorService validator;
 
     @Autowired
     BoardgameRepository boardgameRepository;
@@ -81,9 +82,12 @@ public class BoardgameService {
             newBoardgameDto.setDescription(boardgameDto.getDescription());
         }
 
+        System.out.println(newBoardgameDto.toString());
+
         // Validation
         loggerSplunk.log("Beginning validation for " + newBoardgameDto.toString(), request);
         if (validator.validateBean(newBoardgameDto, "boardgame_v2") == false) {
+            System.out.println("Validation failed!");
             loggerSplunk.log("Validation failed for " + newBoardgameDto.toString(), request,
                     HttpStatus.BAD_REQUEST.value());
             return;

@@ -20,6 +20,7 @@ import xyz.krsh.insecuresite.exceptions.ItemNotFoundException;
 import xyz.krsh.insecuresite.rest.dto.BoardgameDto;
 import xyz.krsh.insecuresite.rest.entities.Boardgame;
 import xyz.krsh.insecuresite.rest.service.BoardgameService;
+import xyz.krsh.insecuresite.rest.service.ESAPIValidatorService;
 import xyz.krsh.insecuresite.security.LoggerWrapper;
 
 import java.security.Principal;
@@ -36,6 +37,9 @@ public class BoardgameController {
 
     @Autowired
     BoardgameService boardgameService;
+
+    @Autowired
+    ESAPIValidatorService validator;
 
     /*
      * Returns every boardgame or the ones that match the query value
@@ -111,6 +115,9 @@ public class BoardgameController {
                     "Invalid bean: " + boardgameDto.toString(), request, HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            logger.log(
+                    "Catched exception" + e + " with input: " + boardgameDto.toString(), request,
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
             return new ResponseEntity<String>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -134,6 +141,7 @@ public class BoardgameController {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
+            System.out.println(e);
             logger.log(
                     "Caught exception " + e + " with Boardgame name: '" + name + "'", request,
                     HttpStatus.INTERNAL_SERVER_ERROR.value());

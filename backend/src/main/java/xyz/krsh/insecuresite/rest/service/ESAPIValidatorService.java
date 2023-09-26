@@ -20,12 +20,14 @@ import org.owasp.esapi.reference.validation.NumberValidationRule;
 import org.owasp.esapi.reference.validation.StringValidationRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.mongodb.client.MongoCollection;
 import xyz.krsh.insecuresite.security.util.HttpBodyParser;
 
 @Service
+@Component
 public class ESAPIValidatorService {
     protected static final Logger logger = LogManager.getLogger();
 
@@ -38,6 +40,10 @@ public class ESAPIValidatorService {
     static final int MIN_DEFAULT = 0;
 
     static final int MAX_DEFAULT = 1024;
+
+    public ESAPIValidatorService() {
+        super();
+    }
 
     public Validator getValidator() {
         return validator;
