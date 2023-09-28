@@ -25,6 +25,7 @@ public class BoardgameService {
 
     protected static final Logger logger = LogManager.getLogger();
     protected static final LoggerWrapper loggerSplunk = new LoggerWrapper();
+    protected static final Logger loggerPA = LogManager.getLogger("Splunk Logger Analisi Predittiva");
 
     @Autowired
     ESAPIValidatorService validator;
@@ -82,7 +83,7 @@ public class BoardgameService {
             newBoardgameDto.setDescription(boardgameDto.getDescription());
         }
 
-        System.out.println(newBoardgameDto.toString());
+        loggerPA.info("BoardgameDescription=\"" + newBoardgameDto.getDescription() + "\"");
 
         // Validation
         loggerSplunk.log("Beginning validation for " + newBoardgameDto.toString(), request);

@@ -5,7 +5,10 @@
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
         <Socket name="Splunk Logger" host="127.0.0.1" port="50123">
-            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS} [%t]&#9;%X{username}&#9;%X{IpAddress}&#9;%X{JSESSIONID}&#9;%X{ContentLength}&#9;%X{HttpStatus}&#9;%msg%n" />
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS}&#9;%X{username}&#9;%X{IpAddress}&#9;%X{JSESSIONID}&#9;%X{ContentLength}&#9;%X{HttpStatus}&#9;%msg%n" />
+        </Socket>
+        <Socket name="Splunk Logger Analisi Predittiva" host="127.0.0.1" port="50124">
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss.SSS}&#9;%msg %n" />
         </Socket>
     </Appenders>
 
@@ -15,6 +18,9 @@
         </Root>
         <Logger name="Splunk Logger" level="INFO">
             <AppenderRef ref="Splunk Logger"/>
+        </Logger>
+        <Logger name="Splunk Logger Analisi Predittiva" level="INFO">
+            <AppenderRef ref="Splunk Logger Analisi Predittiva"/>
         </Logger>
     </Loggers>
 </Configuration>

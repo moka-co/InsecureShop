@@ -7,7 +7,6 @@ async function CheckLogin() {
   
     const response = await fetch(uri, {
       method: 'GET',
-      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     });
 

@@ -47,8 +47,10 @@ public class BoardgameController {
     @GetMapping
     @ResponseBody
     @ApiResponse(description = "Returns every boardgame that matches the query value")
-    public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm)
+    public List<Boardgame> find(@RequestParam(name = "q", defaultValue = "") String queryTerm,
+            HttpServletRequest request)
             throws ItemNotFoundException {
+        logger.log("Called /api/boardgame/", request);
         return boardgameService.findByNameContaining(queryTerm);
     }
 
@@ -61,6 +63,7 @@ public class BoardgameController {
     @ApiResponse(description = "Return a boardgame from the database querying by his primary key")
     public Boardgame getById(@PathVariable String name, HttpServletRequest request) throws ItemNotFoundException {
         try {
+            logger.log("Called /api/boardgame?q=" + name, request);
             return boardgameService.findByNameContaining(name).get(0);
         } catch (ItemNotFoundException e) {
             logger.log(

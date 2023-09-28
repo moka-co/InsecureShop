@@ -32,7 +32,9 @@ public class ValidateCookieFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
-        if (requestURI.endsWith("/api/document/up/") || requestURI.endsWith("/api/document/down/")) {
+        if (requestURI.endsWith("/api/username/") || requestURI.endsWith("/api/check_login/")
+                || requestURI.endsWith("/api/document/up/")
+                || requestURI.endsWith("/api/document/down/")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -134,7 +134,6 @@ public class OrdersService {
             throws UnauthorizedException {
 
         logger.info("Begin Validation in OrdersService.addBoardgameToOrder()");
-        // TODO: add validation for OrderedBoardgameDto
 
         Optional<Order> queryOrder = ordersRepository.findById(orderId);
         Optional<Boardgame> queryBoardgame = boardgameRepository.findById(obd.getName());
